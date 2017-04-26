@@ -1,0 +1,34 @@
+<div class="row container" >
+  <div class="col-md-6">
+    <% if @data != false %>
+      <h2>SCTA-TEXT MASTER RECORD</h2>
+      <p>Current record hash: <%= @data["sha"] %></h2>
+      <p>Current path: <a href="<%= @data["url"] %>"><%= @data["url"] %></a></h2>
+      <!--<div style="height:200px; overflow: scroll;">
+        <pre>#@doc</pre>
+      </div> -->
+    <% else %>
+    <p>No master record exists. Awaiting accepted pull request</p>
+    <% end %>
+  </div>
+  <div class="col-md-6">
+    <h2>SCTA-TEXT My Branch RECORD</h2>
+    <p>Current record hash: <%= @branch_data["sha"] %></h2>
+    <p>Current path: <a href="<%= @data["url"] %>"><%= @branch_data["url"] %></a></h2>
+    <!--<div style="height:200px; overflow: scroll;">
+      <pre> @branch_doc </pre>
+    </div> -->
+  </div>
+  <div class="col-md-12">
+    <h1>Edit Record</h2>
+      <form method="post" action="update">
+        <div>
+          <textarea name="text" style="width: 100%; height: 400px">
+            <%= @edit_branch_doc %>
+          </textarea>
+        </div>
+        <input type="hidden" name="sha" value="<%= @branch_data["sha"] %>"/></td>
+        <input type="submit"/></td>
+      </form>
+    </div>
+</div>
