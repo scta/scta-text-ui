@@ -72,17 +72,16 @@ post '/create' do
 end
 
 post '/update' do
+
   text = @params[:text]
   sha = @params[:sha]
   doc = Nokogiri::XML(text).to_xml(:encoding => 'UTF-8')
   content = Base64.encode64(doc)
 
-
-
-  repo_name = "dionysiusecclesiastica"
-  item = "pdeh-c1"
+  repo_name = @params[:reponame]
+  item = @params[:resourceid]
   repo_base = "https://api.github.com/repos/scta-texts/"
-  filename = "pdeh-c1.xml"
+  filename = "#{item}.xml"
   url = "#{repo_base}#{repo_name}/contents/#{item}/#{filename}"
 
   wrapper =
@@ -94,7 +93,7 @@ post '/update' do
   },
   "content": content,
   "sha": sha,
-  "branch": "develop"
+  "branch": "student-work"
   }
   wrapped_content = JSON.pretty_generate(wrapper)
 
@@ -120,25 +119,27 @@ end
 get '/edit' do
   @edit_branch_title = if params[:branch] then params[:branch] else "master" end
 
- repo_name = "dionysiusecclesiastica"
- item = "pdeh-c1"
- repo_base = "https://api.github.com/repos/scta-texts/"
- filename = "pdeh-c1.xml"
- url = "#{repo_base}#{repo_name}/contents/#{item}/#{filename}"
-
- begin
-  file = open("#{url}", http_basic_authentication: ["jeffreycwitt", ENV['GITHUB_AUTH_TOKEN']]).read
- rescue OpenURI::HTTPError
-   @data = false
- else
-   @data = JSON.parse(file)
-   @content = Base64.decode64(@data["content"])
-   @doc = Nokogiri::XML(@content).to_xml(:encoding => 'UTF-8')
- end
+  repo_name = @params[:reponame]
+  item = @params[:resourceid]
+  repo_base = "https://api.github.com/repos/scta-texts"
+  filename = "#{item}.xml"
+  url = "#{repo_base}/#{repo_name}/contents/#{item}/#{filename}"
 
 
 
-  branch_file = open("#{url}?ref=develop", http_basic_authentication: ["jeffreycwitt", ENV['GITHUB_AUTH_TOKEN']]).read
+  begin
+    file = open("#{url}", http_basic_authentication: ["jeffreycwitt", ENV['GITHUB_AUTH_TOKEN']]).read
+  rescue OpenURI::HTTPError
+    @data = false
+  else
+    @data = JSON.parse(file)
+    @content = Base64.decode64(@data["content"])
+    @doc = Nokogiri::XML(@content).to_xml(:encoding => 'UTF-8')
+  end
+
+
+
+  branch_file = open("#{url}?ref=student-work", http_basic_authentication: ["jeffreycwitt", ENV['GITHUB_AUTH_TOKEN']]).read
   @branch_data = JSON.parse(branch_file)
   @branch_content = Base64.decode64(@branch_data["content"])
   @branch_doc = Nokogiri::XML(@branch_content).to_xml(:encoding => 'UTF-8')

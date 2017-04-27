@@ -23,11 +23,11 @@
     <h1>Edit Record</h2>
       <form method="post" action="update">
         <div>
-          <textarea name="text" style="width: 100%; height: 400px">
-            <%= @edit_branch_doc %>
-          </textarea>
+          <textarea name="text" style="width: 100%; height: 400px"><%= @edit_branch_doc %></textarea>
         </div>
         <input type="hidden" name="sha" value="<%= @branch_data["sha"] %>"/></td>
+        <input type="hidden" name="reponame" value="<%= @params[:reponame] %>"/></td>
+        <input type="hidden" name="resourceid" value="<%= @params[:resourceid] %>"/></td>
         <input type="submit"/></td>
       </form>
     </div>
