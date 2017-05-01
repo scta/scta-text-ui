@@ -100,16 +100,10 @@ post '/update' do
   }
   wrapped_content = JSON.pretty_generate(wrapper)
 
+  @res = HTTParty.put(url, body: wrapped_content, headers: {'Content-Type' => 'application/json', "Authorization" => "token #{cookies["GITHUB_ACCESS_TOKEN"]}", 'User-Agent' => "scta-text-ui-develop"})
 
-  @res = HTTParty.put(url, body: wrapped_content, headers: {'Content-Type' => 'application/json', "Authorization" => "token #{cookies[:GITHUB_ACCESS_TOKEN]}", 'User-Agent' => "scta-text-ui-develop"})
-  #uri = URI.parse(url)
-  #http = Net::HTTP.new(uri.host, uri.port)
-  #http.use_ssl = true
-	#req = Net::HTTP::Put.new(uri.request_uri, 'Content-Type' => 'application/json', "Authorization" => "token #{cookies[:GITHUB_ACCESS_TOKEN]}"})
-  #req.basic_auth("jeffreycwitt", ENV['GITHUB_AUTH_TOKEN'])
-	#req.body = wrapped_content
-  #@res = http.request(req)
-  
+
+
 
   ## begin pull request
   pull_url = "https://api.github.com/repos/scta-texts/#{repo_name}/pulls?access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}"
@@ -137,12 +131,8 @@ get '/return' do
 end
 get '/login' do
   # step 1
-  redirect "https://github.com/login/oauth/authorize?client_id=#{ENV['CLIENT_ID']}"
-  #response from step 1
-  #response includes code parameters
-  #step 2
-  #POST https://github.com/login/oauth/access_token with code received from step 1
-  #post includes, code, client id, and client secret found in env variable
+  #scope is necessary for allow write permissions
+  redirect "https://github.com/login/oauth/authorize?client_id=#{ENV['CLIENT_ID']}&scope=repo"
 end
 get '/edit' do
 
@@ -152,12 +142,12 @@ get '/edit' do
   item = @params[:resourceid]
   repo_base = "https://api.github.com/repos/scta-texts"
   filename = "#{item}.xml"
-  url = "#{repo_base}/#{repo_name}/contents/#{item}/#{filename}?access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}"
+  url = "#{repo_base}/#{repo_name}/contents/#{item}/#{filename}"
 
 
 
   begin
-    file = open("#{url}").read
+    file = open("#{url}?access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}").read
   rescue OpenURI::HTTPError
     @data = false
   else
