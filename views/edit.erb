@@ -1,34 +1,224 @@
-<div class="row container" >
-  <div class="col-md-6">
-    <% if @data != false %>
-      <h2>SCTA-TEXT MASTER RECORD</h2>
-      <p>Current record hash: <%= @data["sha"] %></h2>
-      <p>Current path: <a href="<%= @data["url"] %>"><%= @data["url"] %></a></h2>
-      <!--<div style="height:200px; overflow: scroll;">
-        <pre>#@doc</pre>
-      </div> -->
-    <% else %>
-    <p>No master record exists. Awaiting accepted pull request</p>
-    <% end %>
-  </div>
-  <div class="col-md-6">
-    <h2>SCTA-TEXT My Branch RECORD</h2>
-    <p>Current record hash: <%= @branch_data["sha"] %></h2>
-    <p>Current path: <a href="<%= @data["url"] %>"><%= @branch_data["url"] %></a></h2>
-    <!--<div style="height:200px; overflow: scroll;">
-      <pre> @branch_doc </pre>
-    </div> -->
-  </div>
-  <div class="col-md-12">
-    <h1>Edit Record</h2>
-      <form method="post" action="update">
-        <div>
-          <textarea name="text" style="width: 100%; height: 400px"><%= @edit_branch_doc %></textarea>
-        </div>
-        <input type="hidden" name="sha" value="<%= @branch_data["sha"] %>"/></td>
-        <input type="hidden" name="reponame" value="<%= @params[:reponame] %>"/></td>
-        <input type="hidden" name="resourceid" value="<%= @params[:resourceid] %>"/></td>
-        <input type="submit"/></td>
-      </form>
-    </div>
+<link rel="stylesheet" type="text/css" href="/mirador-2.4/css/mirador-combined.css">
+<link rel="stylesheet" type="text/css" href="/CETEI.css">
+<style type="text/css">
+     #viewer {
+       width: 100%;
+       height: 40%;
+       position: fixed;
+       top: 0
+     }
+     #text-body {margin-top: 21%}
+     .info {font-size: 10px; width: 50%; float: left;}
+     .edit{float: left; width: 50%; }
+     #editor{width: 98%; height: 300px;}
+     #preview { height: 300px; overflow: scroll; border: 1px solid black; padding: 15px;}
+     div {box-sizing: border-box;}
+
+     .row{clear: left; float: none}
+
+</style>
+
+<div>
+  <div id="viewer"></div>
 </div>
+
+<script src="/mirador-2.4/mirador.js"></script>
+<script src="CETEI.js"></script>
+<script>
+
+//initiate mirador
+
+  var mir = Mirador({
+			      "id": "viewer",
+		      	"layout": "1x1",
+		      	'openManifestsPage' : true,
+						"buildPath": "/mirador-2.4/",
+		      	"data" : [
+		      		{manifestUri : "http://scta.info/iiif/summahalensis/quaracchi1924/manifest"}
+						],
+            "windowObjects":[{
+              loadedManifest: "http://scta.info/iiif/summahalensis/quaracchi1924/manifest",
+              canvasID: "http://scta.info/iiif/quaracchi1924/canvas/40",
+              viewType: "ImageView",
+              bottomPanelVisible: "false",
+              sidePanel: "true",
+              sidePanelVisible: "false"
+            }],
+            "annotationEndpoint": { "name":"Local Storage", "module": "LocalStorageEndpoint" }
+		      });
+/* example code
+          mir.eventEmitter.subscribe("windowAdded", function(event, data){
+            console.log(data.id)
+              mir.eventEmitter.subscribe("sidePanelStateUpdated." + data.id, function(event){
+              console.log("sidePanelToggledTest");
+          });
+
+    });
+*/
+</script>
+
+<div id="text-body">
+  <div class="row container">
+    <div class="col-md-6 edit">
+      <h1>Edit Text</h2>
+        <form method="post" action="update">
+          <div>
+            <textarea id="editor" name="text"><%= @edit_branch_doc %></textarea>
+          </div>
+          <input type="hidden" name="sha" value="<%= @branch_data["sha"] %>"/></td>
+          <input type="hidden" name="reponame" value="<%= @params[:reponame] %>"/></td>
+          <input type="hidden" name="resourceid" value="<%= @params[:resourceid] %>"/></td>
+          <input type="submit"/></td>
+        </form>
+    </div>
+    <div class="col-md-6 edit">
+      <h1>Text Preview</h1>
+      <div id="preview">
+      </div>
+    </div>
+  </div>
+  <div class="row container">
+    <div class="col-md-6 info">
+      <% if @data != false %>
+        <h2>SCTA-TEXT MASTER RECORD</h2>
+        <p>Current record hash: <%= @data["sha"] %></h2>
+        <p>Current path: <a href="<%= @data["url"] %>"><%= @data["url"] %></a></h2>
+        <!--<div style="height:200px; overflow: scroll;">
+          <pre>#@doc</pre>
+        </div> -->
+      <% else %>
+      <p>No master record exists. Awaiting accepted pull request</p>
+      <% end %>
+    </div>
+    <div class="col-md-6 info">
+      <h2>SCTA-TEXT My Branch RECORD</h2>
+      <p>Current record hash: <%= @branch_data["sha"] %></h2>
+      <p>Current path: <a href="<%= @data["url"] %>"><%= @branch_data["url"] %></a></h2>
+      <!--<div style="height:200px; overflow: scroll;">
+        <pre> @branch_doc </pre>
+      </div> -->
+    </div>
+  </div>
+</div>
+
+
+<script>
+var CETEIcean = new CETEI();
+var TEI = $("#editor").val();
+CETEIcean.makeHTML5(TEI,function(data){
+  document.getElementById("preview").appendChild(data);
+  CETEIcean.addStyle(document, data)
+});
+
+$('#editor').on('input', function() {
+
+  var newText = tei_conversion($("#editor").val(), function(data){
+  });
+  //console.log(newText);
+  $("#preview").html(newText);
+
+
+});
+
+// custom tei conversion that doesn't repeat registering elements
+// code pulled from CETEI library; registering elemeents fucntions is then cut-out
+tei_conversion = function(TEI, callback, perElementFn){
+
+  TEI_dom = ( new DOMParser() ).parseFromString(TEI, "text/xml");
+  let convertEl = (el) => {
+          // Create new element. TEI elements get prefixed with 'tei-',
+          // TEI example elements with 'teieg-'. All others keep
+          // their namespaces and are copied as-is.
+          let newElement;
+          let copy = false;
+          switch (el.namespaceURI) {
+            case "http://www.tei-c.org/ns/1.0":
+              newElement = document.createElement("tei-" + el.tagName);
+              break;
+            case "http://www.tei-c.org/ns/Examples":
+              if (el.tagName == "egXML") {
+                newElement = document.createElement("teieg-" + el.tagName);
+                break;
+              }
+            case "http://relaxng.org/ns/structure/1.0":
+              newElement = document.createElement("rng-" + el.tagName);
+              break;
+            default:
+              newElement = document.importNode(el, false);
+              copy = true;
+          }
+          // Copy attributes; @xmlns, @xml:id, @xml:lang, and
+          // @rendition get special handling.
+          for (let att of Array.from(el.attributes)) {
+              if (!att.name.startsWith("xmlns") || copy) {
+                newElement.setAttribute(att.name, att.value);
+              } else {
+                if (att.name == "xmlns")
+                newElement.setAttribute("data-xmlns", att.value); //Strip default namespaces, but hang on to the values
+              }
+              if (att.name == "xml:id" && !copy) {
+                newElement.setAttribute("id", att.value);
+              }
+              if (att.name == "xml:lang" && !copy) {
+                newElement.setAttribute("lang", att.value);
+              }
+              if (att.name == "rendition") {
+                newElement.setAttribute("class", att.value.replace(/#/g, ""));
+              }
+          }
+          // Preserve element name so we can use it later
+          newElement.setAttribute("data-teiname", el.localName);
+          // If element is empty, flag it
+          if (el.childNodes.length == 0) {
+            newElement.setAttribute("data-empty", "");
+          }
+          // Turn <rendition scheme="css"> elements into HTML styles
+          if (el.localName == "tagsDecl") {
+            let style = document.createElement("style");
+            for (let node of Array.from(el.childNodes)){
+              if (node.nodeType == Node.ELEMENT_NODE && node.localName == "rendition" && node.getAttribute("scheme") == "css") {
+                let rule = "";
+                if (node.hasAttribute("selector")) {
+                  //rewrite element names in selectors
+                  rule += node.getAttribute("selector").replace(/([^#, >]+\w*)/g, "tei-$1").replace(/#tei-/g, "#") + "{\n";
+                  rule += node.textContent;
+                } else {
+                  rule += "." + node.getAttribute("xml:id") + "{\n";
+                  rule += node.textContent;
+                }
+                rule += "\n}\n";
+                style.appendChild(document.createTextNode(rule));
+              }
+            }
+            if (style.childNodes.length > 0) {
+              newElement.appendChild(style);
+              this.hasStyle = true;
+            }
+          }
+          // Get prefix definitions
+          if (el.localName == "prefixDef") {
+            this.prefixes.push(el.getAttribute("ident"));
+            this.prefixes[el.getAttribute("ident")] =
+              {"matchPattern": el.getAttribute("matchPattern"),
+              "replacementPattern": el.getAttribute("replacementPattern")};
+          }
+          for (let node of Array.from(el.childNodes)){
+              if (node.nodeType == Node.ELEMENT_NODE) {
+                  newElement.appendChild(  convertEl(node)  );
+              }
+              else {
+                  newElement.appendChild(node.cloneNode());
+              }
+          }
+          if (perElementFn) {
+            perElementFn(newElement);
+          }
+          return newElement;
+      }
+
+      html = convertEl(TEI_dom.documentElement);
+      //console.log(html);
+      return html;
+
+}
+</script>
