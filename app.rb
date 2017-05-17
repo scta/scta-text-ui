@@ -141,11 +141,19 @@ get '/edit' do
   #repo_name = @params[:reponame]
   item = @params[:resourceid]
   resource = Lbp::Resource.find(item)
-  if resource.is_a? Lbp::Expression or resource.is_a? Lbp::Manifestation
+  if resource.is_a? Lbp::Expression
     transcription = resource.canonical_transcription.resource
+    @iiif_url = "http://scta.info/iiif/#{resource.top_level_expression.short_id}/collection"
+  elsif resource.is_a? Lbp::Manifestation
+    transcription = resource.canonical_transcription.resource
+    @iiif_url = "http://scta.info/iiif/#{item}/collection"
   elsif resource.is_a? Lbp::Transcription
     transcription = resource
+    @iiif_url = "http://scta.info/iiif/#{item}/collection"
   end
+  
+
+  collection_url = "http://scta.info/iiif/"
 
   repo_array = transcription.doc_path.split("https://").last.split("/")
   owner = repo_array[1]

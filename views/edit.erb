@@ -41,16 +41,16 @@
 		      	'openManifestsPage' : true,
 						"buildPath": "/mirador-2.4/",
 		      	"data" : [
-		      		{manifestUri : "http://scta.info/iiif/summahalensis/quaracchi1924/manifest"}
+		      		{"collectionUri": "<%= @iiif_url %>"}
 						],
-            "windowObjects":[{
-              loadedManifest: "http://scta.info/iiif/summahalensis/quaracchi1924/manifest",
-              canvasID: "http://scta.info/iiif/quaracchi1924/canvas/40",
-              viewType: "ImageView",
-              bottomPanelVisible: "false",
-              sidePanel: "true",
-              sidePanelVisible: "false"
-            }],
+            // "windowObjects":[{
+            //   //loadedManifest: "http://scta.info/iiif/summahalensis/quaracchi1924/manifest",
+            //   //canvasID: "http://scta.info/iiif/quaracchi1924/canvas/40",
+            //   //viewType: "ListView",
+            //   bottomPanelVisible: "false",
+            //   sidePanel: "true",
+            //   sidePanelVisible: "false"
+            // }],
             "annotationEndpoint": { "name":"Local Storage", "module": "LocalStorageEndpoint" }
 		      });
 /* example code
