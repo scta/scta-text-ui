@@ -6,7 +6,7 @@ require "net/https"
 require "nokogiri"
 require "sinatra/cookies"
 require "httparty"
-
+require "lbp"
 
 require_relative "lib/pr_functions"
 
@@ -127,7 +127,7 @@ get '/return' do
   @res = http.request(req)
   access_token = JSON.parse(@res.body)["access_token"]
   cookies[:GITHUB_ACCESS_TOKEN] = access_token
-  redirect "/edit?resourceid=ahsh-l1p1i1t1q1c1&reponame=summahalensis&branch=student-work"
+  redirect "/edit?resourceid=ahsh-l1p1i1t1q1c1&branch=student-work"
 end
 get '/login' do
   # step 1
@@ -138,11 +138,22 @@ get '/edit' do
 
   @edit_branch_title = if params[:branch] then params[:branch] else "master" end
 
-  repo_name = @params[:reponame]
+  #repo_name = @params[:reponame]
   item = @params[:resourceid]
-  repo_base = "https://api.github.com/repos/scta-texts"
-  filename = "#{item}.xml"
-  url = "#{repo_base}/#{repo_name}/contents/#{item}/#{filename}"
+  resource = Lbp::Resource.find(item)
+  if resource.is_a? Lbp::Expression or resource.is_a? Lbp::Manifestation
+    transcription = resource.canonical_transcription.resource
+  elsif resource.is_a? Lbp::Transcription
+    transcription = resource
+  end
+
+  repo_array = transcription.doc_path.split("https://").last.split("/")
+  owner = repo_array[1]
+  repo = repo_array[2]
+  relative_path = transcription.doc_path.split("/raw/master/").last
+  repo_base = "https://api.github.com/repos"
+  url = "#{repo_base}/#{owner}/#{repo}/contents/#{relative_path}"
+
 
 
 
@@ -158,7 +169,7 @@ get '/edit' do
 
 
 
-  branch_file = open("#{url}?ref=student-work&access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}").read
+  branch_file = open("#{url}?ref=#{@edit_branch_title}&access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}").read
   @branch_data = JSON.parse(branch_file)
   @branch_content = Base64.decode64(@branch_data["content"])
   @branch_doc = Nokogiri::XML(@branch_content).to_xml(:encoding => 'UTF-8')

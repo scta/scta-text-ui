@@ -7,13 +7,20 @@
        position: fixed;
        top: 0
      }
-     #text-body {margin-top: 21%}
-     .info {font-size: 10px; width: 50%; float: left;}
-     .edit{float: left; width: 50%; }
-     #editor{width: 98%; height: 300px;}
-     #preview { height: 300px; overflow: scroll; border: 1px solid black; padding: 15px;}
+     #text-body {position: fixed; top: 40%; height: 50%; margin: 0; width: 100%}
+     .info {position:fixed; top: 94%; font-size: 10px; clear: left; float: none; padding-left: 10px}
+     .edit-wrapper{float: left; width: 50%; height: 100%; margin: 0;}
+     .preview-wrapper{float: left; width: 50%; height: 100%; margin: 0;}
+     #editor{width: 100%; height: 48vh; background-color: #171414; color: #646369}
+     #preview {width: 100%; height: 48vh; margin: 0px; padding-left: 20px; overflow: scroll; }
      div {box-sizing: border-box;}
+     textarea {margin: 0; padding: 5px; border: none; box-sizing: border-box;}
 
+     p.mini-header{width: 100%; background-color: black; color: #777582; margin: 0; padding: 2px; text-align: center; border-bottom: 2px solid black;}
+     #save{width: 200%; background-color: black; color: #777582;
+       margin: 0; padding: 2px; text-align: center; border-bottom: 2px solid black;
+        border: none;}
+        #save:hover{background-color: #2b2a2a}
      .row{clear: left; float: none}
 
 </style>
@@ -59,8 +66,8 @@
 
 <div id="text-body">
   <div class="row container">
-    <div class="col-md-6 edit">
-      <h1>Edit Text</h2>
+    <div class="col-md-6 edit-wrapper">
+      <p class="mini-header">Edit Text</p>
         <form method="post" action="update">
           <div>
             <textarea id="editor" name="text"><%= @edit_branch_doc %></textarea>
@@ -68,37 +75,33 @@
           <input type="hidden" name="sha" value="<%= @branch_data["sha"] %>"/></td>
           <input type="hidden" name="reponame" value="<%= @params[:reponame] %>"/></td>
           <input type="hidden" name="resourceid" value="<%= @params[:resourceid] %>"/></td>
-          <input type="submit"/></td>
+          <input type="submit" id="save" value="save"/></td>
         </form>
     </div>
-    <div class="col-md-6 edit">
-      <h1>Text Preview</h1>
+    <div class="col-md-6 preview-wrapper">
+      <p class="mini-header">Preview Text</p>
       <div id="preview">
       </div>
     </div>
   </div>
-  <div class="row container">
-    <div class="col-md-6 info">
-      <% if @data != false %>
-        <h2>SCTA-TEXT MASTER RECORD</h2>
-        <p>Current record hash: <%= @data["sha"] %></h2>
-        <p>Current path: <a href="<%= @data["url"] %>"><%= @data["url"] %></a></h2>
-        <!--<div style="height:200px; overflow: scroll;">
-          <pre>#@doc</pre>
-        </div> -->
-      <% else %>
-      <p>No master record exists. Awaiting accepted pull request</p>
-      <% end %>
-    </div>
-    <div class="col-md-6 info">
-      <h2>SCTA-TEXT My Branch RECORD</h2>
-      <p>Current record hash: <%= @branch_data["sha"] %></h2>
-      <p>Current path: <a href="<%= @data["url"] %>"><%= @branch_data["url"] %></a></h2>
+</div>
+<div class="info">
+    <p>Current Editing Branch <%= @edit_branch_title %> |
+      Current record hash: <%= @branch_data["sha"] %> |
+    Current path: <a href="<%= @data["url"] %>"><%= @branch_data["url"] %></a>
+  </p>
+  <% if @data != false %>
+      <p>SCTA-TEXT MASTER RECORD |
+      Current record hash: <%= @data["sha"] %> |
+      Current path: <a href="<%= @data["url"] %>"><%= @data["url"] %></a>
+    </p>
       <!--<div style="height:200px; overflow: scroll;">
-        <pre> @branch_doc </pre>
+        <pre>#@doc</pre>
       </div> -->
-    </div>
-  </div>
+    <% else %>
+    <p>No master record exists. Awaiting accepted pull request</p>
+    <% end %>
+
 </div>
 
 
