@@ -73,7 +73,9 @@
             <textarea id="editor" name="text"><%= @edit_branch_doc %></textarea>
           </div>
           <input type="hidden" name="sha" value="<%= @branch_data["sha"] %>"/></td>
-          <input type="hidden" name="reponame" value="<%= @params[:reponame] %>"/></td>
+          <input type="hidden" name="reponame" value="<%= @repo %>"/></td>
+          <input type="hidden" name="owner" value="<%= @owner %>"/></td>
+          <input type="hidden" name="branch" value="<%= @edit_branch_title %>"/></td>
           <input type="hidden" name="resourceid" value="<%= @params[:resourceid] %>"/></td>
           <input type="submit" id="save" value="save"/></td>
         </form>

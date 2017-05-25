@@ -81,11 +81,13 @@ post '/update' do
   doc = Nokogiri::XML(text).to_xml(:encoding => 'UTF-8')
   content = Base64.encode64(doc)
 
+  owner = @params[:owner]
   repo_name = @params[:reponame]
   item = @params[:resourceid]
-  repo_base = "https://api.github.com/repos/scta-texts/"
+  repo_base = "https://api.github.com/repos"
   filename = "#{item}.xml"
-  url = "#{repo_base}#{repo_name}/contents/#{item}/#{filename}"
+  url = "#{repo_base}/#{owner}/#{repo_name}/contents/#{item}/#{filename}"
+  branch = @params[:branch]
 
   wrapper =
   {
@@ -96,7 +98,7 @@ post '/update' do
   },
   "content": content,
   "sha": sha,
-  "branch": "student-work"
+  "branch": branch
   }
   wrapped_content = JSON.pretty_generate(wrapper)
 
@@ -106,8 +108,8 @@ post '/update' do
 
 
   ## begin pull request
-  pull_url = "https://api.github.com/repos/scta-texts/#{repo_name}/pulls?access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}"
-  submit_pr(pull_url)
+  pull_url = "#{repo_base}/#{owner}/#{repo_name}/pulls?access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}"
+  submit_pr(pull_url, branch)
 
   erb :updated
 
@@ -127,7 +129,7 @@ get '/return' do
   @res = http.request(req)
   access_token = JSON.parse(@res.body)["access_token"]
   cookies[:GITHUB_ACCESS_TOKEN] = access_token
-  redirect "/edit?resourceid=ahsh-l1p1i1t1q1c1&branch=student-work"
+  redirect "/edit?resourceid=ahsh-l1p1i1t1q1c1&branch=sandbox"
 end
 get '/login' do
   # step 1
@@ -151,16 +153,16 @@ get '/edit' do
     transcription = resource
     @iiif_url = "http://scta.info/iiif/#{item}/collection"
   end
-  
+
 
   collection_url = "http://scta.info/iiif/"
 
   repo_array = transcription.doc_path.split("https://").last.split("/")
-  owner = repo_array[1]
-  repo = repo_array[2]
+  @owner = repo_array[1]
+  @repo = repo_array[2]
   relative_path = transcription.doc_path.split("/raw/master/").last
   repo_base = "https://api.github.com/repos"
-  url = "#{repo_base}/#{owner}/#{repo}/contents/#{relative_path}"
+  url = "#{repo_base}/#{@owner}/#{@repo}/contents/#{relative_path}"
 
 
 
@@ -178,6 +180,7 @@ get '/edit' do
 
 
   branch_file = open("#{url}?ref=#{@edit_branch_title}&access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}").read
+
   @branch_data = JSON.parse(branch_file)
   @branch_content = Base64.decode64(@branch_data["content"])
   @branch_doc = Nokogiri::XML(@branch_content).to_xml(:encoding => 'UTF-8')

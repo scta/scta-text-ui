@@ -1,8 +1,8 @@
-def submit_pr(url)
+def submit_pr(url, branch)
   pr = {
   "title": "Pull request for updated entry",
   "body": "Please pull this in!",
-  "head": "student-work",
+  "head": branch,
   "base": "master"
   }
   pr = JSON.pretty_generate(pr)
