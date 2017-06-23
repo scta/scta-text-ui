@@ -9,6 +9,7 @@ require "httparty"
 require "lbp"
 
 require_relative "lib/pr_functions"
+require_relative "lib/get_functions"
 
 configure do
   set :server, :puma
@@ -26,7 +27,10 @@ if settings.development?
 end
 
 get '/' do
-
+  data = JSON.parse(cookies['GITHUB_USER_DATA'])
+  @username = data['login']
+  @user_url = data['html_url']
+  erb :index
 end
 
 # get '/new' do
@@ -117,19 +121,30 @@ post '/update' do
 
 end
 get '/return' do
-  code = @params[:code]
-  #POST https://github.com/login/oauth/access_token with code received from step 1
+  if cookies[:GITHUB_ACCESS_TOKEN] == nil
+    code = @params[:code]
+    #POST https://github.com/login/oauth/access_token with code received from step 1
 
-  uri = URI.parse("https://github.com/login/oauth/access_token")
-  http = Net::HTTP.new(uri.host, uri.port)
-  http.use_ssl = true
-  req = Net::HTTP::Post.new(uri.request_uri, initheader = {"Accept" => 'application/json'})
-  req.set_form_data({"code" => code, "client_id" => ENV['CLIENT_ID'], "client_secret" => ENV['CLIENT_SECRET']})
+    uri = URI.parse("https://github.com/login/oauth/access_token")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    req = Net::HTTP::Post.new(uri.request_uri, initheader = {"Accept" => 'application/json'})
+    req.set_form_data({"code" => code, "client_id" => ENV['CLIENT_ID'], "client_secret" => ENV['CLIENT_SECRET']})
 
-  @res = http.request(req)
-  access_token = JSON.parse(@res.body)["access_token"]
-  cookies[:GITHUB_ACCESS_TOKEN] = access_token
-  redirect "/edit?resourceid=ahsh-l1p1i1t1q1c1&branch=sandbox"
+    @res = http.request(req)
+    access_token = JSON.parse(@res.body)["access_token"]
+    cookies[:GITHUB_ACCESS_TOKEN] = access_token
+
+    # user data
+    user_data_raw = open("https://api.github.com/user?access_token=#{access_token}").read
+    cookies[:GITHUB_USER_DATA] = user_data_raw
+  end
+  #redirect "/edit?resourceid=ahsh-l1p1i1t1q1c1&branch=sandbox"
+  data = JSON.parse(cookies['GITHUB_USER_DATA'])
+  @username = data['login']
+  @user_url = data['html_url']
+  erb :load
+
 end
 get '/login' do
   # step 1
@@ -195,5 +210,18 @@ get '/edit' do
   else
     @branch_doc
   end
-  erb :edit
+  erb :edit, :layout => false
+end
+
+get '/edit2' do
+  url = params[:url]
+  data = JSON.parse(cookies['GITHUB_USER_DATA'])
+  @username = data['login']
+  @user_url = data['html_url']
+  if url
+    @doc = get_doc_from_data(url)
+  else
+    @doc = ""
+  end
+  erb :edit2
 end
