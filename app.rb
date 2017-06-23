@@ -26,6 +26,7 @@ if settings.development?
   require 'pry'
 end
 
+# index route
 get '/' do
   data = JSON.parse(cookies['GITHUB_USER_DATA'])
   @username = data['login']
@@ -33,51 +34,45 @@ get '/' do
   erb :index
 end
 
-# get '/new' do
-#   erb :new
-# end
-#
-# post '/create' do
-#   id = @params[:id]
-#   title = @params[:title]
-#   type = @params[:type]
-#
-#   data = {
-#     "@context": "http://scta.info/api/core/1.0/people/context.json",
-#     "@id": "http://scta.info/resource/#{id}",
-#     "@type": "http://scta.info/resource/person",
-#     "dc:title": "#{title}",
-#     "sctap:personType": "http://scta.info/resource/#{type}",
-#     "sctap:shortId": "#{id}"
-#   }
-#
-#   content = Base64.encode64(JSON.pretty_generate(data))
-#
-#   wrapper =
-#   {
-#   "message": "New entry for #{id}",
-#   "committer": {
-#     "name": "Jeffrey C. Witt",
-#     "email": "jeffreycwitt@gmail.com"
-#   },
-#   "content": content,
-#   "branch": "develop"
-#   }
-#   wrapped_content = JSON.pretty_generate(wrapper)
-#
-#   uri = URI.parse("https://api.github.com/repos/scta/scta-people/contents/graphs/#{id}.jsonld")
-#   http = Net::HTTP.new(uri.host, uri.port)
-#   http.use_ssl = true
-# 	req = Net::HTTP::Put.new(uri.request_uri, 'Content-Type' => 'application/json')
-#   req.basic_auth("jeffreycwitt", ENV['GITHUB_AUTH_TOKEN'])
-# 	req.body = wrapped_content
-#   @res = http.request(req)
-#
-#   ## begin pull request
-#   submit_pr(id)
-#   erb :created
-# end
+# login route
+# step one in the oauth process
+get '/login' do
+  #scope is necessary for allow write permissions
+  redirect "https://github.com/login/oauth/authorize?client_id=#{ENV['CLIENT_ID']}&scope=repo"
+end
 
+# step two in the oauth process
+# github redirects here
+# if auth_token is not already set, auth_token and other desirable data are set to environmental variables
+get '/return' do
+  # check to see if acess_token has already been set
+  if cookies[:GITHUB_ACCESS_TOKEN] == nil
+    #get code return from github
+    code = @params[:code]
+    #request access_token using returned code and client_id and client_secret
+    uri = URI.parse("https://github.com/login/oauth/access_token")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    req = Net::HTTP::Post.new(uri.request_uri, initheader = {"Accept" => 'application/json'})
+    req.set_form_data({"code" => code, "client_id" => ENV['CLIENT_ID'], "client_secret" => ENV['CLIENT_SECRET']})
+    @res = http.request(req)
+    #parse response
+    access_token = JSON.parse(@res.body)["access_token"]
+    cookies[:GITHUB_ACCESS_TOKEN] = access_token
+    #get user data using new access token
+    user_data_raw = open("https://api.github.com/user?access_token=#{access_token}").read
+    cookies[:GITHUB_USER_DATA] = user_data_raw
+  end
+
+  data = JSON.parse(cookies['GITHUB_USER_DATA'])
+  @username = data['login']
+  @user_url = data['html_url']
+  erb :load
+end
+
+# update (aka commit a file)
+# TODO: make this more generic; most of this is custom for scta texts and repos
+# TODO: abstract some of this out to lib directory
 post '/update' do
 
   text = @params[:text]
@@ -106,56 +101,45 @@ post '/update' do
   }
   wrapped_content = JSON.pretty_generate(wrapper)
 
+  # create git commit via github api
   @res = HTTParty.put(url, body: wrapped_content, headers: {'Content-Type' => 'application/json', "Authorization" => "token #{cookies["GITHUB_ACCESS_TOKEN"]}", 'User-Agent' => "scta-text-ui-develop"})
-
-
-
 
   ## begin pull request
   pull_url = "#{repo_base}/#{owner}/#{repo_name}/pulls?access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}"
   submit_pr(pull_url, branch)
 
+  # load new view
   erb :updated
-
-
-
 end
-get '/return' do
-  if cookies[:GITHUB_ACCESS_TOKEN] == nil
-    code = @params[:code]
-    #POST https://github.com/login/oauth/access_token with code received from step 1
 
-    uri = URI.parse("https://github.com/login/oauth/access_token")
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    req = Net::HTTP::Post.new(uri.request_uri, initheader = {"Accept" => 'application/json'})
-    req.set_form_data({"code" => code, "client_id" => ENV['CLIENT_ID'], "client_secret" => ENV['CLIENT_SECRET']})
-
-    @res = http.request(req)
-    access_token = JSON.parse(@res.body)["access_token"]
-    cookies[:GITHUB_ACCESS_TOKEN] = access_token
-
-    # user data
-    user_data_raw = open("https://api.github.com/user?access_token=#{access_token}").read
-    cookies[:GITHUB_USER_DATA] = user_data_raw
-  end
-  #redirect "/edit?resourceid=ahsh-l1p1i1t1q1c1&branch=sandbox"
+# main edit page
+get '/edit2' do
+  # get api url for target file
+  url = params[:url]
+  # get cookie data need for view
   data = JSON.parse(cookies['GITHUB_USER_DATA'])
   @username = data['login']
   @user_url = data['html_url']
-  erb :load
 
+  # get doc from github
+  if url
+    @doc = get_doc_from_data(url)
+  else
+    @doc = ""
+  end
+  erb :edit2
 end
-get '/login' do
-  # step 1
-  #scope is necessary for allow write permissions
-  redirect "https://github.com/login/oauth/authorize?client_id=#{ENV['CLIENT_ID']}&scope=repo"
-end
+
+# alternative edit page
+# route for edit view with embeded mirador
+# a lot of this is customized to retrieve github file name from scta text id
+# probably best to depreciate this route but preserve it as an example for new route
 get '/edit' do
 
   @edit_branch_title = if params[:branch] then params[:branch] else "master" end
 
-  #repo_name = @params[:reponame]
+  # get iiif collection url
+  # get transcription object from scta database
   item = @params[:resourceid]
   resource = Lbp::Resource.find(item)
   if resource.is_a? Lbp::Expression
@@ -181,7 +165,7 @@ get '/edit' do
 
 
 
-
+  # TODO: replace with functions used in lib/get_functions.rb
   begin
     file = open("#{url}?access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}").read
   rescue OpenURI::HTTPError
@@ -193,7 +177,7 @@ get '/edit' do
   end
 
 
-
+  #TODO: this is sort of depreciated, since I'm no longer using two desplays of text
   branch_file = open("#{url}?ref=#{@edit_branch_title}&access_token=#{cookies[:GITHUB_ACCESS_TOKEN]}").read
 
   @branch_data = JSON.parse(branch_file)
@@ -211,17 +195,4 @@ get '/edit' do
     @branch_doc
   end
   erb :edit, :layout => false
-end
-
-get '/edit2' do
-  url = params[:url]
-  data = JSON.parse(cookies['GITHUB_USER_DATA'])
-  @username = data['login']
-  @user_url = data['html_url']
-  if url
-    @doc = get_doc_from_data(url)
-  else
-    @doc = ""
-  end
-  erb :edit2
 end
