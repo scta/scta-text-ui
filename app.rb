@@ -113,7 +113,7 @@ post '/update' do
 end
 
 # main edit page
-get '/edit2' do
+get '/editor' do
   # get api url for target file
   url = params[:url]
   # get cookie data need for view
@@ -125,9 +125,30 @@ get '/edit2' do
   if url
     @doc = get_doc_from_data(url)
   else
-    @doc = ""
+    @doc = get_doc_from_template
   end
-  erb :edit2
+  @access_token = cookies[:GITHUB_ACCESS_TOKEN]
+  erb :editor
+end
+
+## just returns parsed doc
+## required for ajax reques
+# this could likely be done entirely in javascript
+get '/doc' do
+  # get api url for target file
+  url = params[:url]
+  # get cookie data need for view
+  data = JSON.parse(cookies['GITHUB_USER_DATA'])
+  @username = data['login']
+  @user_url = data['html_url']
+
+  # get doc from github
+  if url
+    @doc = get_doc_from_data(url)
+  else
+    @doc = get_doc_from_template
+  end
+  return @doc
 end
 
 # alternative edit page
@@ -194,5 +215,6 @@ get '/edit' do
   else
     @branch_doc
   end
+
   erb :edit, :layout => false
 end

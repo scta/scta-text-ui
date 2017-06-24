@@ -1,22 +1,5 @@
-/** {
-    margin: 0;
-    padding: 0;
-}
-.full-width {
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
-}*/
-#editor{
-    overflow-y: scroll; width: 100%; height: 100vh; background-color: #b3cab6; color: black}
-}
-
-#preview-wrapper{
-    overflow-y: scroll; width: 100%; height: 500px; color: black;}
-}
-.no-padding{
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+html, body {
+  height:100%;
 }
 textarea {
     border: none;
@@ -26,4 +9,61 @@ textarea {
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     box-shadow: none;
+}
+
+/* styleing for dual pane editor windows
+requires html and body to be set to 100% height
+*/
+
+#editor-wrapper{
+height: 100%
+}
+
+.window{
+  box-sizing: border-box;
+  width: 50%;
+  float: left;
+  overflow-y: scroll;
+}
+
+#editor-text-area{
+  width:100%;
+  height: 100vh;
+  background-color: #b3cab6;
+}
+
+#editor{
+  background-color: #b3cab6;
+  padding-top: 25px;
+  margin: 0;
+  padding-left: 0;
+  overflow-y: scroll;
+  width: 50%;
+  height:100%;
+  color: black
+}
+
+#preview{
+  overflow-y: scroll;
+  width: 50%;
+  height: 100%;
+  color: black;
+}
+
+.no-padding{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* styling for dir */
+
+#dir{
+  position: fixed;
+  z-index: 1;
+  top: 20%;
+  left: 20%;
+  width: 60%;
+  height: 60%;
+  background: white;
+  overflow: scroll;
 }

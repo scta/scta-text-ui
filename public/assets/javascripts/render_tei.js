@@ -5,9 +5,9 @@ CETEIcean.makeHTML5(TEI,function(data){
   CETEIcean.addStyle(document, data)
 });
 
-$('#editor').on('input', function() {
+$('#editor-text-area').on('input', function() {
 
-  var newText = tei_conversion($("#editor").val(), function(data){
+  var newText = tei_conversion($("#editor-text-area").val(), function(data){
   });
   //console.log(newText);
   $("#preview").html(newText);

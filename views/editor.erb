@@ -1,0 +1,34 @@
+<div id="editor-wrapper">
+  <div id="editor" class="window">
+    <form>
+      <textarea id="editor-text-area"><%= @doc %></textarea>
+    </form>
+  </div>
+  <div id="preview" class="window">
+  </div>
+  <span id="aldfjds"><%= @access_token %></span>
+</div>
+<div id="dir" style="display: none">
+  <div>
+    <form id="file-manual">
+      <div class="form-group">
+        <label for="pwd">Enter a file url here</label>
+        <input type="text" class="form-control" id="url" name="url" placeholder="https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml">
+      </div>
+      <button type="submit" class="btn btn-default">Submit</button>
+    </form>
+  </div>
+  <div>
+    <p>Recent Files</p>
+    <ul id="recentfiles">
+      <li>
+        <a class="file-open-file" data-url="https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml">https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml</a>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <p>My Repositories</p>
+    <ul id="repositories">
+    </ul>
+  </div>
+</div>
