@@ -1,19 +1,19 @@
 <div id="editor-wrapper">
   <div id="editor" class="window">
     <form>
-      <textarea id="editor-text-area"><%= @doc %></textarea>
+      <textarea id="editor-text-area"></textarea>
     </form>
   </div>
   <div id="preview" class="window">
   </div>
-  <span id="aldfjds"><%= @access_token %></span>
+  <span id="aldfjds" style="display: none;"><%= @access_token %></span>
 </div>
-<div id="dir" style="display: none">
+<div id="dir" class="file-window">
   <div>
     <form id="file-manual">
       <div class="form-group">
-        <label for="pwd">Enter a file url here</label>
-        <input type="text" class="form-control" id="url" name="url" placeholder="https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml">
+        <label for="manual-url">Enter a file url here</label>
+        <input type="text" class="form-control" id="manual-url" name="manual-url" placeholder="https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml?ref=sandbox">
       </div>
       <button type="submit" class="btn btn-default">Submit</button>
     </form>
@@ -22,7 +22,7 @@
     <p>Recent Files</p>
     <ul id="recentfiles">
       <li>
-        <a class="file-open-file" data-url="https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml">https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml</a>
+        <a class="file-open-file" data-url="https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml?ref=sandbox">https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml?ref=sandbox</a>
       </li>
     </ul>
   </div>
@@ -31,4 +31,28 @@
     <ul id="repositories">
     </ul>
   </div>
+</div>
+<div id="save" class="file-window">
+  <form id="save-form">
+    <div class="form-group">
+      <label for="save-url">File Path</label><br/>
+      <input type="text" name="save-url" id="save-url"/>
+    </div>
+    <div class="form-group">
+      <label for="sha">Last Commit</label><br/>
+      <input type="text" name="sha" id="sha"/>
+    </div>
+    <div class="form-group">
+      <label for="branch">Branch</label><br/>
+      <input type="text" name="branch" id="branch"/>
+    </div>
+    <div class="form-group">
+      <label for="branch">Message</label><br/>
+      <input type="text" name="message" id="message"/>
+    </div>
+    <div class="form-group"><br/>
+      <input type="submit" id="save" value="save"/>
+    </div>
+    </div>
+  </form>
 </div>

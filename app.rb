@@ -122,11 +122,13 @@ get '/editor' do
   @user_url = data['html_url']
 
   # get doc from github
-  if url
-    @doc = get_doc_from_data(url)
-  else
-    @doc = get_doc_from_template
-  end
+  # if url
+  #   @data = get_data(url)
+  #   @doc = get_doc(@data)
+  # else
+  #   @data = {}
+  #   @doc = get_doc_from_template
+  # end
   @access_token = cookies[:GITHUB_ACCESS_TOKEN]
   erb :editor
 end
@@ -150,7 +152,12 @@ get '/doc' do
   end
   return @doc
 end
-
+get '/data' do
+  content_type :json
+  url = params[:url]
+  data = get_data(url)
+  @data = data.to_json
+end
 # alternative edit page
 # route for edit view with embeded mirador
 # a lot of this is customized to retrieve github file name from scta text id
