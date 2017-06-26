@@ -1,16 +1,11 @@
 $(document).ready(function(){
   var access_token = $("#aldfjds").text();
-
-  //var newText = tei_conversion($("#editor-text-area").val(), function(data){});
-  //$("#preview").html(newText);
-//create new file
+  // load empty template onload
+  loadTemplateText()
+  //load empty template
   $(document).on("click","#file-new", function(){
     console.log("test")
-    $.get("/doc", function(data){
-      $("#editor-text-area").val(data);
-      var newText = tei_conversion($("#editor-text-area").val(), function(data){});
-      $("#preview").html(newText);
-    });
+    loadTemplateText()
   });
 //open dir
   $(document).on("click","#file-open-dir", function(){
@@ -31,26 +26,15 @@ $(document).ready(function(){
   $(document).on("click",".file-open-file", function(){
     var url = $(this).attr("data-url");
     $('#dir').css({"display": "none"})
-    retrieveAPIData(url, access_token).done(function(data){
-      var content = parseXMLContent(data);
-      addXMLContent(content);
-      createPreviewContent();
-      setSaveParameters(data);
-    });
+    loadText(url, access_token)
   });
 // open file from input url
   $("#file-manual").submit(function(e){
     e.preventDefault();
     $('#dir').css({"display": "none"})
-
     var url = $(this).find("#manual-url").val();
-    retrieveAPIData(url, access_token).done(function(data){
-      var content = parseXMLContent(data);
+    loadText(url, access_token)
 
-      addXMLContent(content);
-      createPreviewContent();
-      setSaveParameters(data);
-    });
   });
 
 // save file using save form data-xmlns
@@ -90,7 +74,9 @@ $("#save-form").submit(function(e){
       data: JSON.stringify(commit_data),
 
       success: function(data, status, res) {
-        console.log(data, status, res)
+        console.log(res.responseJSON.content)
+        //updates save parameters; specifically it resets save form with newest shaw
+        setSaveParameters(res.responseJSON.content)
         $('#save').css({"display": "none"});
       },
       error: function(res, status, error){
@@ -100,8 +86,6 @@ $("#save-form").submit(function(e){
   });
 
 });
-
-
 
 
 // Utility functions
@@ -117,10 +101,7 @@ function parseXMLContent(data){
 
 }
 function addXMLContent(content){
-  //note jquery.html is expanding self closed xml tags
-  // innerHTML does not seem to be causing this problem
   $("#editor-text-area").val(content);
-  //document.getElementById("editor-text-area").innerHTML = content;
 }
 function createPreviewContent(){
   var newText = tei_conversion($("#editor-text-area").val(), function(data){});
@@ -136,3 +117,24 @@ function setSaveParameters(data){
   $("#branch").attr("value", branch );
 
 }
+
+function loadText(url, access_token){
+  retrieveAPIData(url, access_token).done(function(data){
+    var content = parseXMLContent(data);
+    addXMLContent(content);
+    createPreviewContent();
+    setSaveParameters(data);
+  });
+}
+// TODO: this function still relies on a sinatra route, but should be any easy fix.
+function loadTemplateText(){
+  $.get("/doc", function(data){
+    $("#editor-text-area").val(data);
+    var newText = tei_conversion($("#editor-text-area").val(), function(data){});
+    $("#preview").html(newText);
+  });
+}
+
+// note: after a file is saved, if you immediately navigate away and then come back to that file
+//github is sometimes still serviing the file, because it hasn't updated yet.
+//This could cause some real headaches for users.
