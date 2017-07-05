@@ -7,6 +7,7 @@ require "nokogiri"
 require "sinatra/cookies"
 require "httparty"
 require "lbp"
+require  'cgi'
 
 require_relative "lib/pr_functions"
 require_relative "lib/get_functions"
@@ -65,11 +66,11 @@ get '/return' do
     user_data_raw = open("https://api.github.com/user?access_token=#{access_token}").read
     cookies[:GITHUB_USER_DATA] = user_data_raw
   end
-
-  data = JSON.parse(cookies['GITHUB_USER_DATA'])
+  data = JSON.parse(CGI.unescape(cookies['GITHUB_USER_DATA']))
   @username = data['login']
   @user_url = data['html_url']
-  erb :load
+  #erb :load
+  redirect '/editor'
 end
 
 # update (aka commit a file)
@@ -120,6 +121,7 @@ get '/editor' do
   url = params[:url]
   # get cookie data need for view
   data = JSON.parse(cookies['GITHUB_USER_DATA'])
+
   @username = data['login']
   @user_url = data['html_url']
 
