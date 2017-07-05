@@ -12,6 +12,9 @@ require  'cgi'
 require_relative "lib/pr_functions"
 require_relative "lib/get_functions"
 
+CLIENT_ID = ENV['CLIENT_ID']
+CLIENT_SECRET = ENV['CLIENT_SECRET']
+
 configure do
   set :server, :puma
   set :bind, "0.0.0.0"
@@ -41,7 +44,7 @@ end
 # step one in the oauth process
 get '/login' do
   #scope is necessary for allow write permissions
-  redirect "https://github.com/login/oauth/authorize?client_id=#{ENV['CLIENT_ID']}&scope=repo"
+  redirect "https://github.com/login/oauth/authorize?client_id=#{CLIENT_ID}&scope=repo"
 end
 
 # step two in the oauth process
@@ -57,7 +60,7 @@ get '/return' do
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
     req = Net::HTTP::Post.new(uri.request_uri, initheader = {"Accept" => 'application/json'})
-    req.set_form_data({"code" => code, "client_id" => ENV['CLIENT_ID'], "client_secret" => ENV['CLIENT_SECRET']})
+    req.set_form_data({"code" => code, "client_id" => CLIENT_ID, "client_secret" => CLIENT_SECRET})
     @res = http.request(req)
     #parse response
     access_token = JSON.parse(@res.body)["access_token"]
