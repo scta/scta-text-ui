@@ -28,9 +28,11 @@ end
 
 # index route
 get '/' do
-  data = JSON.parse(cookies['GITHUB_USER_DATA'])
-  @username = data['login']
-  @user_url = data['html_url']
+  if cookies[:GITHUB_ACCESS_TOKEN] != nil
+    data = JSON.parse(cookies['GITHUB_USER_DATA'])
+    @username = data['login']
+    @user_url = data['html_url']
+  end
   erb :index
 end
 
