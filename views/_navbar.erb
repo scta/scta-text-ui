@@ -28,11 +28,11 @@
         </li>
         <% end %>
       </ul>
-
+      <% if @username %>
       <ul class="nav navbar-nav navbar-right">
         <li><a href="<%= @user_url %>">Logged in as <%= @username %></a></li>
-
-      </ul>
+      <% end %>
+    </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
