@@ -15,6 +15,8 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.5.1)
+      public_suffix (~> 2.0, >= 2.0.2)
     backports (3.8.0)
     builder (3.2.3)
     coderay (1.1.1)
@@ -24,6 +26,8 @@ GEM
     ebnf (1.1.0)
       rdf (~> 2.0)
       sxp (~> 1.0)
+    faraday (0.12.1)
+      multipart-post (>= 1.2, < 3)
     haml (4.0.7)
       tilt
     hamster (3.0.0)
@@ -43,14 +47,18 @@ GEM
     mini_portile2 (2.1.0)
     multi_json (1.12.1)
     multi_xml (0.5.5)
+    multipart-post (2.0.0)
     net-http-persistent (2.9.4)
     netrc (0.11.0)
     nokogiri (1.7.0.1)
       mini_portile2 (~> 2.1.0)
+    octokit (4.7.0)
+      sawyer (~> 0.8.0, >= 0.5.3)
     pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
+    public_suffix (2.0.5)
     puma (3.2.0)
     rack (1.6.5)
     rack-protection (1.5.3)
@@ -81,6 +89,9 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    sawyer (0.8.1)
+      addressable (>= 2.3.5, < 2.6)
+      faraday (~> 0.8, < 1.0)
     sinatra (1.4.8)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -119,6 +130,7 @@ DEPENDENCIES
   httparty
   lbp!
   nokogiri
+  octokit (~> 4.0)
   pry
   puma
   sinatra

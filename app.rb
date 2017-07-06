@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'octokit'
 require 'open-uri'
 require 'json'
 require "base64"
@@ -7,13 +8,15 @@ require "nokogiri"
 require "sinatra/cookies"
 require "httparty"
 require "lbp"
-require  'cgi'
+require 'cgi'
 
 require_relative "lib/pr_functions"
 require_relative "lib/get_functions"
 
 CLIENT_ID = ENV['CLIENT_ID']
 CLIENT_SECRET = ENV['CLIENT_SECRET']
+
+use Rack::Session::Pool
 
 configure do
   set :server, :puma
@@ -30,50 +33,57 @@ if settings.development?
   require 'pry'
 end
 
-# index route
-get '/' do
-  if cookies[:GITHUB_ACCESS_TOKEN] != nil
-    data = JSON.parse(cookies['GITHUB_USER_DATA'])
-    @username = data['login']
-    @user_url = data['html_url']
-  end
-  erb :index
+# authentation code taken from https://developer.github.com/v3/guides/basics-of-authentication/ and http://radek.io/2014/08/03/github-oauth-with-octokit/
+def authenticated?
+  session[:access_token]
 end
 
-# login route
-# step one in the oauth process
-get '/login' do
-  #scope is necessary for allow write permissions
-  redirect "https://github.com/login/oauth/authorize?client_id=#{CLIENT_ID}&scope=repo"
+def authenticate!
+  client = Octokit::Client.new
+  url = client.authorize_url CLIENT_ID, :scope => 'repo'
+
+  redirect url
+end
+
+# index route
+get '/' do
+  if !authenticated?
+    authenticate!
+  else
+    access_token = session[:access_token]
+    scopes = []
+
+    client = Octokit::Client.new \
+      :client_id => CLIENT_ID,
+      :client_secret => CLIENT_SECRET
+
+    begin
+      client.check_application_authorization access_token
+    rescue => e
+      # request didn't succeed because the token was revoked so we
+      # invalidate the token stored in the session and render the
+      # index page so that the user can start the OAuth flow again
+
+      session[:access_token] = nil
+      return authenticate!
+    end
+
+    # doesn't necessarily need to go in 'editor'
+    redirect '/editor'
+  end
 end
 
 # step two in the oauth process
 # github redirects here
 # if auth_token is not already set, auth_token and other desirable data are set to environmental variables
 get '/return' do
-  # check to see if acess_token has already been set
-  if cookies[:GITHUB_ACCESS_TOKEN] == nil
-    #get code return from github
-    code = @params[:code]
-    #request access_token using returned code and client_id and client_secret
-    uri = URI.parse("https://github.com/login/oauth/access_token")
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    req = Net::HTTP::Post.new(uri.request_uri, initheader = {"Accept" => 'application/json'})
-    req.set_form_data({"code" => code, "client_id" => CLIENT_ID, "client_secret" => CLIENT_SECRET})
-    @res = http.request(req)
-    #parse response
-    access_token = JSON.parse(@res.body)["access_token"]
-    cookies[:GITHUB_ACCESS_TOKEN] = access_token
-    #get user data using new access token
-    user_data_raw = open("https://api.github.com/user?access_token=#{access_token}").read
-    cookies[:GITHUB_USER_DATA] = user_data_raw
-  end
-  data = JSON.parse(CGI.unescape(cookies['GITHUB_USER_DATA']))
-  @username = data['login']
-  @user_url = data['html_url']
+  # get code return from github and get access token
+  session_code = request.env['rack.request.query_hash']['code']
+  result = Octokit.exchange_code_for_token(session_code, CLIENT_ID, CLIENT_SECRET)
+  session[:access_token] = result[:access_token]
+
   #erb :load
-  redirect '/editor'
+  redirect '/'
 end
 
 # update (aka commit a file)
@@ -121,12 +131,12 @@ end
 # main edit page
 get '/editor' do
   # get api url for target file
-  url = params[:url]
+  #url = params[:url]
   # get cookie data need for view
-  data = JSON.parse(cookies['GITHUB_USER_DATA'])
-
-  @username = data['login']
-  @user_url = data['html_url']
+  client = Octokit::Client.new :access_token => session[:access_token]
+  data = client.user
+  @username = data.login
+  @user_url = data.html_url
 
   # get doc from github
   # if url
@@ -136,7 +146,7 @@ get '/editor' do
   #   @data = {}
   #   @doc = get_doc_from_template
   # end
-  @access_token = cookies[:GITHUB_ACCESS_TOKEN]
+  @access_token = session[:access_token]
   erb :editor
 end
 
@@ -147,9 +157,10 @@ get '/doc' do
   # get api url for target file
   url = params[:url]
   # get cookie data need for view
-  data = JSON.parse(cookies['GITHUB_USER_DATA'])
-  @username = data['login']
-  @user_url = data['html_url']
+  client = Octokit::Client.new :access_token => session[:access_token]
+  data = client.user
+  @username = data.login
+  @user_url = data.html_url
 
   # get doc from github
   if url
@@ -159,6 +170,7 @@ get '/doc' do
   end
   return @doc
 end
+
 get '/data' do
   content_type :json
   url = params[:url]
