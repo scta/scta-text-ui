@@ -28,6 +28,8 @@ GEM
       sxp (~> 1.0)
     faraday (0.12.1)
       multipart-post (>= 1.2, < 3)
+    gon-sinatra (0.1.2)
+      sinatra
     haml (4.0.7)
       tilt
     hamster (3.0.0)
@@ -127,6 +129,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  gon-sinatra
   httparty
   lbp!
   nokogiri

@@ -1,5 +1,4 @@
 $(document).ready(function(){
-  var access_token = $("#aldfjds").text();
   // load empty template onload
   loadTemplateText()
   //load empty template
@@ -12,7 +11,7 @@ $(document).ready(function(){
     $('#save').css({"display": "none"})
     $('#dir').css({"display": "block"})
     var url = "https://api.github.com/user/repos"
-    retrieveAPIData(url, access_token).done(function(data){
+    retrieveAPIData(url, gon.access_token).done(function(data){
       for (var i = 0, len = data.length; i < len; i++) {
         $("#repositories").append('<li><a class="file-open-file" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
       }
@@ -26,14 +25,14 @@ $(document).ready(function(){
   $(document).on("click",".file-open-file", function(){
     var url = $(this).attr("data-url");
     $('#dir').css({"display": "none"})
-    loadText(url, access_token)
+    loadText(url, gon.access_token)
   });
 // open file from input url
   $("#file-manual").submit(function(e){
     e.preventDefault();
     $('#dir').css({"display": "none"})
     var url = $(this).find("#manual-url").val();
-    loadText(url, access_token)
+    loadText(url, gon.access_token)
 
   });
 
@@ -48,8 +47,8 @@ $("#save-form").submit(function(e){
   var branch = $(this).find("#branch").val();
   var sha = $(this).find("#sha").val();
   var message = $(this).find("#message").val();
-  var commiterName = "Jeffrey C. Witt"
-  var commiterEmail = "jeffreycwitt@gmail.com"
+  var commiterName = gon.name;
+  var commiterEmail = gon.email;
 
   var commit_data = {
     "path": url,
@@ -65,7 +64,7 @@ $("#save-form").submit(function(e){
 
     //update content
     //TODO: move this to separate function
-    url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token
+    url_with_access = url.includes("?") ? url + "&access_token=" + gon.access_token : url + "?access_token=" + gon.access_token
     $.ajax({
       url: url_with_access, // your api url
       type: 'put', // type is any HTTP method

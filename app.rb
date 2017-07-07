@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'octokit'
+require 'gon-sinatra'
 require 'open-uri'
 require 'json'
 require "base64"
@@ -17,6 +18,7 @@ CLIENT_ID = ENV['CLIENT_ID']
 CLIENT_SECRET = ENV['CLIENT_SECRET']
 
 use Rack::Session::Pool
+Sinatra::register Gon::Sinatra
 
 configure do
   set :server, :puma
@@ -40,7 +42,8 @@ end
 
 def authenticate!
   client = Octokit::Client.new
-  url = client.authorize_url CLIENT_ID, :scope => 'repo'
+  scopes = ['repo', 'user']
+  url = client.authorize_url(CLIENT_ID, :scope => 'repo,user:email')
 
   redirect url
 end
@@ -137,7 +140,7 @@ get '/editor' do
   data = client.user
   @username = data.login
   @user_url = data.html_url
-
+  p data
   # get doc from github
   # if url
   #   @data = get_data(url)
@@ -146,7 +149,14 @@ get '/editor' do
   #   @data = {}
   #   @doc = get_doc_from_template
   # end
-  @access_token = session[:access_token]
+  gon.access_token = session[:access_token]
+  gon.name = data.name
+  if data.email
+    gon.email = data.email
+  else
+    gon.email = @username + '@users.noreply.github.com'
+  end
+
   erb :editor
 end
 
