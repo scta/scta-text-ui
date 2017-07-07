@@ -1,5 +1,6 @@
 $(document).ready(function(){
   var access_token = $("#aldfjds").text();
+  var username = $("#username");
   // load empty template onload
   loadTemplateText()
   //load empty template
@@ -10,7 +11,7 @@ $(document).ready(function(){
 
 
 //===============BINDING ENVENTS =========================//
-//open dir
+//open repository list
   $(document).on("click",".file-open-dir", function(){
     $('#save').css({"display": "none"})
     $('#repo-browser').css({"display": "none"})
@@ -47,7 +48,7 @@ $(document).ready(function(){
     var branch = $(this).attr("data-branch");
     var branchSha = $(this).attr("data-branch");
     var repo = $(this).attr("data-repo");
-    var url = "https://api.github.com/repos/" + repo + "/contents" + path;
+    var url = "https://api.github.com/repos/" + repo + "/contents" + path + "?ref=" + branch;
     $('.file-window').css({"display": "none"})
     loadText(url, access_token)
   });
@@ -66,6 +67,12 @@ $(document).ready(function(){
     var branch = $(this).attr("data-branch");
     getRepoBranches(url, access_token);
   });
+  $(document).on("click", ".create-fork", function(){
+    var url = $(this).attr("data-url");
+    var repo = url.split("https://api.github.com/repos/")[1];
+    console.log("repo for create fork", repo);
+    createFork(repo, access_token);
+  });
   //display contents of a git tree
   $(document).on("click",".file-open-tree", function(){
     var url = $(this).attr("data-url");
@@ -74,6 +81,14 @@ $(document).ready(function(){
     var branchSha = $(this).attr("data-branch-sha");
     var repo = $(this).attr("data-repo");
     retrieveTreeTree(url, access_token, path, branch, branchSha, repo);
+  });
+  $(document).on("submit", "#create-new-branch", function(e){
+    e.preventDefault();
+    console.log(e)
+    var branchName = $(e.target).find("#branch").val();
+    var repo = $(e.target).find("#repo").val();
+    var branchSourceSha = $(e.target).find("#branch-source-sha").val();
+    createNewBranch(repo, branchName, branchSourceSha, access_token);
   });
 
 /// FUNCTIONS
@@ -120,7 +135,7 @@ $("#save-form").submit(function(e){
         console.log(res.responseJSON.content)
         //updates save parameters; specifically it resets save form with newest shaw
         setSaveParameters(res.responseJSON.content)
-        $('#message').empty();
+        $('#message').val("");
         $('#save').css({"display": "none"});
       },
       error: function(res, status, error){
@@ -163,13 +178,15 @@ function getRepoBranches(repo_base, access_token){
   });
 }
 function displayRepoBranches(data, repo_base){
+  var repo = repo_base.split("https://api.github.com/repos/")[1];
   $("#repo-browser-list").empty();
   $("#repo-browser").css({"display": "block"});
   $("#repo-browser-list").append('<h1>Available Branches</h1>');
   //$("#repo-browser-list").append('<p><a class="file-open-dir">' + "Back to Repo List" +'</a></li>');
   for (var i = 0, len = data.length; i < len; i++) {
-    $("#repo-browser-list").append('<li><a class="file-open-branch" data-branch-sha="' + data[i].commit.sha + '" data-url="'+ repo_base + '" data-branch="' + data[i].name + '">' + data[i].name +'</a></li>');
+    $("#repo-browser-list").append('<li><a class="file-open-branch" data-branch-sha="' + data[i].commit.sha + '" data-url="'+ repo_base + '" data-branch="' + data[i].name + '">' + data[i].name +'</a> --> create new branch --> <form id="create-new-branch"><input id="branch" name="branch" placeholder="gh-pages"></input><input type="hidden" id="repo" name="repo" value="' + repo + '"/><input type="hidden" id="branch-source-sha" name="branch-source-sha" value="' + data[i].commit.sha + '"/><input type="submit"/></form></li>');
   }
+
 }
 function retrieveRepoTree(repo_base, access_token, branch, branchSha){
   //set branch default to "master"
@@ -205,8 +222,8 @@ function retrieveTreeTree(tree_url, access_token, parent_path, branch, branchSha
 
 }
 function displayRepoList(url, access_token){
+  url = url + "?per_page=100";
   retrieveAPIData(url, access_token).done(function(data){
-    console.log("repo data", data);
     $("#repo-browser-branch").empty();
     for (var i = 0, len = data.length; i < len; i++) {
       $("#repositories").append('<li><a class="file-open-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
@@ -219,7 +236,12 @@ function displayTree(tree, path, branch, branchSha, repo, parent_tree_url){
   $("#repo-browser-list").empty();
   $("#repo-browser-branch").empty();
   $("#repo-browser").css({"display": "block"});
-  $("#repo-browser-branch").html('<p>' + branch + '</p>');
+  if (branch === "gh-pages"){
+    $("#repo-browser-branch").html('<p>' + branch + '</p><p><a href="http://' + repo.split('/')[0] +'.github.io/' + repo.split('/')[1] + '" target="_blank">View on gh-pages</a></p>');
+  }
+  else{
+    $("#repo-browser-branch").html('<p>' + branch + '</p>');
+  }
 
   if (path){
     //bug, this keeps appending even when you are moving back up the tree
@@ -236,6 +258,55 @@ function displayTree(tree, path, branch, branchSha, repo, parent_tree_url){
       $("#repo-browser-list").append('<li><a class="file-open-tree" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + path + "/" + tree[i].path + '">' + tree[i].path +'</a></li>');
     }
   }
+}
+
+//Create new branch
+
+function createNewBranch(repo, branchName, branchSourceSha, access_token){
+  new_branch_data = {
+      "ref": "refs/heads/" + branchName,
+      "sha": branchSourceSha
+    }
+    var url = "https://api.github.com/repos/" + repo + "/" + "git/refs"
+    var url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
+    console.log("url", url_with_access);
+    console.log("new_branch_data", new_branch_data);
+    $.ajax({
+      url: url_with_access, // your api url
+      type: 'post', // type is any HTTP method
+      contentType: "application/json",
+      //JSON.stringify seems required; it's the only way I could get it to work
+      data: JSON.stringify(new_branch_data),
+
+      success: function(data, status, res) {
+        console.log(res)
+        repo_base = "https://api.github.com/repos/" + repo;
+        retrieveRepoTree(repo_base, access_token, branchName, branchSourceSha)
+      },
+      error: function(res, status, error){
+        console.log(res, status, error)
+      }
+    });
+
+}
+
+function createFork(repo, access_token){
+    var url = "https://api.github.com/repos/" + repo + "/forks";
+    var url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
+    $.ajax({
+      url: url_with_access, // your api url
+      type: 'post', // type is any HTTP method
+      success: function(data, status, res) {
+        console.log("create fork response", res)
+        var forkedRepoBase = res.responseJSON.url;
+        getRepoBranches(forkedRepoBase, access_token);
+
+      },
+      error: function(res, status, error){
+        console.log(res, status, error)
+      }
+    });
+
 }
 
 // Utility functions
@@ -262,6 +333,7 @@ function setSaveParameters(data){
   var sha = data.sha
   var url = data.url.split("?ref=")[0]
   var branch = data.url.split("?ref=")[1] ? data.url.split("?ref=")[1] : state["branch"];
+  console.log("save data", data);
   $("#sha").attr("value", sha );
   $("#save-url").attr("value", url);
   $("#branch").attr("value", branch );
