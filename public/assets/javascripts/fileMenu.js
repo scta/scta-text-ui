@@ -107,6 +107,7 @@ $(document).ready(function(){
     $('.file-window').removeClass("visible");
     $('#editor').removeClass("darkened");
     $('#preview').removeClass("darkened");
+    Recent.set(url);
     Util.loadText(url, access_token)
   });
   //directory or repo opening events
@@ -192,6 +193,7 @@ $(document).ready(function(){
 });
 
 var Util = {
+  access_token: $("#aldfjds").text(),
   retrieveAPIData: function(url, access_token){
     url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
     return $.get(url_with_access);
@@ -211,7 +213,7 @@ var Util = {
     var branch = data.url.split("?ref=")[1]
     var repo = data.repo ? data.repo : data.url.split("https://api.github.com/repos/")[1].split("/contents/")[0];
     path = data.path.split("/" + data.name)[0] === data.name ? "" : data.path.split("/" + data.name)[0];
-
+    console.log(data)
     $("#sha").val(data.sha);
     $("#save-url").html(data.url);
     $("#repo").val(repo);
@@ -219,6 +221,9 @@ var Util = {
     $("#file-name").val(data.name);
     $("#branch").val(branch);
     $('#message').val("");
+
+    Doc.set(data)
+    Repo.retrieveAndSetRepoState("https://api.github.com/repos/" + repo, Util.access_token)
 
   },
   clearSaveParamters: function(){
@@ -229,6 +234,9 @@ var Util = {
     $("#file-name").val("");
     $("#branch").val("");
     $('#message').val("");
+
+    Doc.set({});
+    Repo.set({});
   },
   loadText: function(url, access_token){
     var _this = this
@@ -249,11 +257,12 @@ var Util = {
     });
   }
 }
+
 // note: after a file is saved, if you immediately navigate away and then come back to that file
 //github is sometimes still serviing the file, because it hasn't updated yet.
 //This could cause some real headaches for users.
 
-////////SAVE AS COMPONENT
+//===========SAVE AS COMPONENT
 var SaveAs = {
   saveFile: function(url, commitData, access_token){
     url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token
@@ -447,6 +456,10 @@ var Open = {
     url = url + "?per_page=100";
     Util.retrieveAPIData(url, access_token).done(function(data){
       $("#repo-browser-branch").empty();
+      $("#recentfiles").empty();
+      for (var i = 0, len = Recent.files.length; i < len; i++) {
+        $("#recentfiles").append('<li><a class="file-open-file" data-url="'+ Recent.files[i] + '">' + Recent.files[i] +'</a></li>');
+      }
       for (var i = 0, len = data.length; i < len; i++) {
         $("#repositories").append('<li><a class="file-open-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
       }
@@ -470,6 +483,35 @@ var Open = {
         }
       });
 
+  }
+
+}
+
+var Doc = {
+  state: {},
+  set: function(data){
+    this.state = data;
+  }
+}
+
+var Repo = {
+  state: {},
+  set: function(data){
+    this.state = data
+  },
+  retrieveAndSetRepoState: function(url, access_token){
+    var _this = this;
+    Util.retrieveAPIData(url, access_token).done(function(data){
+      _this.set(data);
+      console.log("repo state", _this.state);
+    });
+  }
+}
+
+var Recent = {
+  files: [],
+  set: function(file){
+    this.files.push(file);
   }
 
 }
