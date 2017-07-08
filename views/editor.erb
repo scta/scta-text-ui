@@ -50,18 +50,26 @@
   </p>
 </div>
 <div id="save" class="file-window">
-  <form id="save-form">
+  <form id="save-form" style="float: left; width: 40%; box-sizing: border-box;">
     <div class="form-group">
       <label for="save-url">File Path</label><br/>
       <input type="text" name="save-url" id="save-url"/>
     </div>
     <div class="form-group">
-      <label for="sha">Last Commit</label><br/>
-      <input type="text" name="sha" id="sha"/>
+      <label for="repo">Repo</label><br/>
+      <input type="text" name="repo" id="repo"/>
+    </div>
+    <div class="form-group">
+      <label for="path">Path</label><br/>
+      <input type="text" name="path" id="path"/>
     </div>
     <div class="form-group">
       <label for="branch">Branch</label><br/>
       <input type="text" name="branch" id="branch"/>
+    </div>
+    <div class="form-group">
+      <label for="sha">Last Commit</label><br/>
+      <input type="text" name="sha" id="sha"/>
     </div>
     <div class="form-group">
       <label for="branch">Message</label><br/>
@@ -70,6 +78,9 @@
     <div class="form-group"><br/>
       <input type="submit" id="save" value="save"/>
     </div>
-    </div>
   </form>
+  <div id="save-as-file-browser" style="float: left; width: 60%; box-sizing: border-box;">
+    <ul id="save-as-file-browser-list-wrapper">
+    </ul>
+  </div>
 </div>
