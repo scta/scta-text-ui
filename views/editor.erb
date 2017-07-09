@@ -83,7 +83,14 @@
       <input type="submit" id="save" value="save"/>
     </div>
   </form>
-  <div id="save-as-file-browser" style="float: left; width: 60%; box-sizing: border-box;">
+  <div id="save-as-file-browser" style="float: left; width: 60%; box-sizing: border-box; border-left: 1px dotted black;">
+    <div style="margin: 2px; padding: 2px; border-bottom: 1px dotted black;">
+      <p>Create new repository</p>
+      <form id="create-new-repo">
+        <input type="text" name='new-repo-name' id='new-repo-name' placeholder='new-repo-name'/>
+        <input type="submit"/>
+      </form>
+    </div>
     <ul id="save-as-file-browser-list-wrapper">
     </ul>
   </div>

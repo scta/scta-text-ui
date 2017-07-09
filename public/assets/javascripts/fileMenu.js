@@ -55,7 +55,8 @@ $(document).ready(function(){
     var repo = url.split("https://api.github.com/repos/")[1];
     Util.clearSaveParamters();
     $("#repo").val(repo);
-    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + $("#path").val() + "/" + $("#file-name").val() + "?ref=" + $("#branch").val());
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
     SaveAs.displaySaveAsRepoBranchList(url, access_token);
   });
   //opens top level tree in saveAs window for a given repo branch
@@ -65,7 +66,8 @@ $(document).ready(function(){
     var branchSha = $(this).attr("data-branch-sha");
     $("#branch").val(branch);
     $("#sha").val(branchSha);
-    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + $("#path").val() + "/" + $("#file-name").val() + "?ref=" + $("#branch").val());
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
     //retrieveDirectoryCommits(url, access_token)
     //retrieveRepoTree(url, access_token, branch, branchSha);
     SaveAs.displaySaveAsTree(url, branch, branchSha, access_token);
@@ -75,24 +77,28 @@ $(document).ready(function(){
     var branch = $(this).attr("data-branch");
     var branchSha = $(this).attr("data-branch-sha");
     var path = $(this).attr("data-path");
-    $("#path").val(path);
-    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + $("#path").val() + "/" + $("#file-name").val() + "?ref=" + $("#branch").val());
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
 
     //retrieveDirectoryCommits(url, access_token)
     //retrieveRepoTree(url, access_token, branch, branchSha);
     SaveAs.displaySaveAsTree(url, branch, branchSha, access_token);
   });
   $(document).on("input", "#repo", function(e){
-    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + $("#path").val() + "/" + $("#file-name").val() + "?ref=" + $("#branch").val());
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
   });
   $(document).on("input", "#path", function(e){
-    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + $("#path").val() + "/" + $("#file-name").val() + "?ref=" + $("#branch").val());
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
   });
   $(document).on("input", "#file-name", function(e){
-    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + $("#path").val() + "/" + $("#file-name").val() + "?ref=" + $("#branch").val());
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
   });
   $(document).on("input", "#branch", function(e){
-    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + $("#path").val() + "/" + $("#file-name").val() + "?ref=" + $("#branch").val());
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
   });
   // open file events
   //open file from direct url list
@@ -168,6 +174,11 @@ $(document).ready(function(){
     var branchSourceSha = $(e.target).find("#branch-source-sha").val();
     //displaySaveAsTree(url, branch, branchSha, access_token);
     SaveAs.createNewSaveAsBranch(repo, branchName, branchSourceSha, access_token);
+  });
+  $(document).on("submit", "#create-new-repo", function(e){
+    e.preventDefault();
+    var name = $(e.target).find("#new-repo-name").val();
+    SaveAs.createNewRepo(name);
   });
 
   $("#editor-wrapper").on("click", function(){
@@ -371,7 +382,37 @@ var SaveAs = {
         console.log(res, status, error)
       }
     });
+  },
+  createNewRepo: function(name){
+    var _this = this;
+    access_token = Util.access_token;
+    var url = "https://api.github.com/user/repos"
+    var url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
+    content = {
+      "name": name,
+      "auto_init": true
+    }
+    $.ajax({
+      url: url_with_access, // your api url
+      type: 'post', // type is any HTTP method
+      contentType: "application/json",
+      //JSON.stringify seems required; it's the only way I could get it to work
+      data: JSON.stringify(content),
+
+      success: function(data, status, res) {
+        console.log(res);
+        repo = res.responseJSON.full_name
+        $("#repo").val(repo);
+        var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+        $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
+        _this.displaySaveAsRepoBranchList(res.responseJSON.url, access_token)
+      },
+      error: function(res, status, error){
+        console.log(res, status, error)
+      }
+    });
   }
+
 }
 
 //File Open COMPONENT
@@ -493,7 +534,6 @@ var Open = {
       });
 
   }
-
 }
 
 var Pr = {
