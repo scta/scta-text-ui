@@ -186,16 +186,11 @@ $(document).ready(function(){
     var branch = $(this).find("#branch").val();
     var sha = $(this).find("#sha").val();
     var message = $(this).find("#message").val();
-    var commiterName = "Jeffrey C. Witt"
-    var commiterEmail = "jeffreycwitt@gmail.com"
+
 
     var commit_data = {
       "path": url,
       "message": message,
-      "committer": {
-        "name": commiterName,
-        "email": commiterEmail
-        },
       "content": content,
       "sha": sha,
       "branch": branch
