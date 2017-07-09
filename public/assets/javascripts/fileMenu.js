@@ -540,13 +540,18 @@ var Pr = {
   displayPullRequestInfo: function(current, target){
     console.log("doc state", Doc.state)
     if (Repo.state){
-      var branch = Doc.state.url.split("?ref=")[1];
-      $("#current-repo").html("<p id='current' data-repo='" + Repo.state.full_name + "' data-branch='" + branch + "'>Current Repo: " + Repo.state.url + ": Branch: " + branch + "</p>");
-      $("#target-repo").html("<p id='target' data-repo='" + Repo.state.parent.full_name + "' data-branch='" + Repo.state.parent.default_branch + "'>Target Repo: " + Repo.state.parent.url + ": Branch: " + Repo.state.parent.default_branch + "</p>");
-      $("#pull-request-viewer").append('<button type="button" id="submit-pull-request" class="btn btn-primary">Submit for Reivew</button>');
+      if (Repo.state.parent){
+        var branch = Doc.state.url.split("?ref=")[1];
+        $("#current-repo").html("<p id='current' data-repo='" + Repo.state.full_name + "' data-branch='" + branch + "'>Current Repo: " + Repo.state.url + ": Branch: " + branch + "</p>");
+        $("#target-repo").html("<p id='target' data-repo='" + Repo.state.parent.full_name + "' data-branch='" + Repo.state.parent.default_branch + "'>Target Repo: " + Repo.state.parent.url + ": Branch: " + Repo.state.parent.default_branch + "</p>");
+        $("#pull-request-viewer").append('<button type="button" id="submit-pull-request" class="btn btn-primary">Submit for Reivew</button>');
+      }
+      else{
+        $("#current-repo").html("<p>This repo was not forked from a parent repo.</p>");
+      }
     }
     else {
-      $("#current-repo").html("<p>New document open for submission</p>");
+      $("#current-repo").html("<p>No document open for submission</p>");
     }
   },
   submitPullRequest: function(currentRepo, currentBranch, targetRepo, targetBranch){
