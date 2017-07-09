@@ -7,7 +7,7 @@ require "net/https"
 require "nokogiri"
 require "sinatra/cookies"
 require "httparty"
-require "lbp"
+#require "lbp"
 require 'cgi'
 
 require_relative "lib/pr_functions"
