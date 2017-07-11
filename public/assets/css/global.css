@@ -11,7 +11,7 @@ textarea {
     box-shadow: none;
 }
 
-/* styleing for dual pane editor windows
+/* styling for dual pane editor windows
 requires html and body to be set to 100% height
 */
 
@@ -26,21 +26,9 @@ height: 100%
   overflow-y: scroll;
 }
 
-#editor-text-area{
-  width:100%;
-  height: 100vh;
-  background-color: #b3cab6;
-}
-
 #editor{
-  background-color: #b3cab6;
-  padding-top: 25px;
-  margin: 0;
-  padding-left: 0;
-  overflow-y: scroll;
   width: 50%;
   height:100%;
-  color: black
 }
 
 #preview{
@@ -48,6 +36,7 @@ height: 100%
   width: 50%;
   height: 100%;
   color: black;
+  padding-left: 2%;
 }
 
 .no-padding{

@@ -8,14 +8,10 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="/assets/css/CETEI.css">
     <link rel="stylesheet" type="text/css" href="/assets/css/global.css">
-    <style>
-    body { padding-top: 70px; }
-    </style>
   </head>
-  <%= erb :_navbar %>
-  <body style="margin-top: 50px">
-  <%= yield %>
-
+  <body style="padding-top: 51px; padding-bottom: 30px;">
+    <%= erb :_navbar %>
+    <%= yield %>
   </body>
   <footer></footer>
 
@@ -23,8 +19,9 @@
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
   <script src="/assets/javascripts/CETEI.js"></script>
-  <script src="/assets/javascripts/render_tei.js"></script>
   <script src="/assets/javascripts/base64.js"></script>
+  <script src="/assets/javascripts/src-min-noconflict/ace.js"></script>
+  <!-- <script src="/assets/javascripts/render_tei.js"></script> -->
   <script src="/assets/javascripts/fileMenu.js"></script>
 
 </html>
