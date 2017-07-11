@@ -8,7 +8,7 @@ require "net/https"
 require "nokogiri"
 require "sinatra/cookies"
 require "httparty"
-require "lbp"
+#require "lbp"
 require 'cgi'
 
 require_relative "lib/pr_functions"
@@ -101,12 +101,6 @@ get '/editor' do
   @user_url = data.html_url
   gon.access_token = session[:access_token]
   gon.username = @username
-  gon.name = data.name
-  if data.email
-    gon.email = data.email
-  else
-    gon.email = @username + '@users.noreply.github.com'
-  end
 
   erb :editor
 end

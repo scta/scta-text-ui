@@ -6,10 +6,10 @@ $(document).ready(function(){
   aceEditor.session.setMode("ace/mode/xml");
 
   // load empty template onload
-  loadTemplateText();
+  Util.loadTemplateText();
 
   aceEditor.on('change', function() {
-    var newText = tei_conversion(aceEditor.getValue(), function(data){
+    var newText = Rendering.tei_conversion(aceEditor.getValue(), function(data){
     });
     //console.log(newText);
     $("#preview").html(newText);
@@ -17,41 +17,113 @@ $(document).ready(function(){
 
   //load empty template
   $(document).on("click","#file-new", function(){
-    loadTemplateText();
+    Util.loadTemplateText();
   });
 
 
 //===============BINDING ENVENTS =========================//
+  // open pr review dialogue box
+  $(document).on("click", "#file-pr", function(){
+    $('#editor').addClass("darkened");
+    $('#preview').addClass("darkened");
+    $('.file-window').removeClass("visible")
+    $('#pull-request-viewer').addClass("visible")
+    Pr.displayPullRequestInfo();
+  });
+  $(document).on("click", "#submit-pull-request", function(){
+    var currentRepo = $("#current").attr("data-repo");
+    var currentBranch = $("#current").attr("data-branch");
+    var targetRepo = $("#target").attr("data-repo");
+    var targetBranch = $("#target").attr("data-branch");
+    Pr.submitPullRequest(currentRepo, currentBranch, targetRepo, targetBranch);
+  });
 //open repository list
   $(document).on("click",".file-open-dir", function(){
-    $('#save').css({"display": "none"})
-    $('#repo-browser').css({"display": "none"})
+    $('#editor').addClass("darkened");
+    $('#preview').addClass("darkened");
+    $('.file-window').removeClass("visible")
     $('#breadcrumbs').empty();
     $("#repositories").empty();
-    $('#dir').css({"display": "block"})
+    $('#dir').addClass("visible");
     var url = "https://api.github.com/user/repos"
-    displayRepoList(url, gon.access_token);
+    Open.displayOpenRepoList(url, gon.access_token);
   });
 //open save dialogue box
   $(document).on("click","#file-open-save", function(){
-    $('#dir').css({"display": "none"});
-    $('#repo-browser').css({"display": "none"});
-    $('#save').css({"display": "block"});
-  });
+    $('.file-window').removeClass("visible");
+    var url = "https://api.github.com/user/repos";
+    SaveAs.displaySaveAsRepoList(url, gon.access_token);
+    $('#editor').addClass("darkened");
+    $('#preview').addClass("darkened");
+    $('#save').addClass("visible");
 
-// open file events
+  });
+  //opens list of branches in save as window
+  $(document).on("click", ".file-open-save-as-repo", function(){
+    var url = $(this).attr("data-url");
+    var repo = url.split("https://api.github.com/repos/")[1];
+    Util.clearSaveParamters();
+    $("#repo").val(repo);
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
+    SaveAs.displaySaveAsRepoBranchList(url, gon.access_token);
+  });
+  //opens top level tree in saveAs window for a given repo branch
+  $(document).on("click", ".file-open-save-as-branch", function(){
+    var url = $(this).attr("data-url");
+    var branch = $(this).attr("data-branch");
+    var branchSha = $(this).attr("data-branch-sha");
+    $("#branch").val(branch);
+    $("#sha").val(branchSha);
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
+    //retrieveDirectoryCommits(url, access_token)
+    //retrieveRepoTree(url, access_token, branch, branchSha);
+    SaveAs.displaySaveAsTree(url, branch, branchSha, gon.access_token);
+  });
+  $(document).on("click", ".file-open-save-as-path", function(){
+    var url = $(this).attr("data-url");
+    var branch = $(this).attr("data-branch");
+    var branchSha = $(this).attr("data-branch-sha");
+    var path = $(this).attr("data-path");
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
+
+    //retrieveDirectoryCommits(url, access_token)
+    //retrieveRepoTree(url, access_token, branch, branchSha);
+    SaveAs.displaySaveAsTree(url, branch, branchSha, gon.access_token);
+  });
+  $(document).on("input", "#repo", function(e){
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
+  });
+  $(document).on("input", "#path", function(e){
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
+  });
+  $(document).on("input", "#file-name", function(e){
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
+  });
+  $(document).on("input", "#branch", function(e){
+    var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+    $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
+  });
+  // open file events
   //open file from direct url list
   $(document).on("click",".file-open-file", function(){
     var url = $(this).attr("data-url");
-    $('.file-window').css({"display": "none"})
-    loadText(url, gon.access_token)
+    $('.file-window').removeClass("visible");
+    $('#editor').removeClass("darkened");
+    $('#preview').removeClass("darkened");
+    Util.loadText(url, gon.access_token)
   });
 // open file from input url
   $("#file-manual").submit(function(e){
     e.preventDefault();
-    $('#dir').css({"display": "none"})
+    $('.file-window').removeClass("visible");
     var url = $(this).find("#manual-url").val();
-    loadText(url, gon.access_token)
+    Util.loadText(url, gon.access_token)
   });
   //open file from directory list
   $(document).on("click",".file-open-file-list", function(){
@@ -60,29 +132,33 @@ $(document).ready(function(){
     var branchSha = $(this).attr("data-branch");
     var repo = $(this).attr("data-repo");
     var url = "https://api.github.com/repos/" + repo + "/contents" + path + "?ref=" + branch;
-    $('.file-window').css({"display": "none"})
-    loadText(url, access_token)
+    $('.file-window').removeClass("visible");
+    $('#editor').removeClass("darkened");
+    $('#preview').removeClass("darkened");
+    Recent.set(url);
+    Util.loadText(url, gon.access_token)
   });
-//directory or repo opening events
+  //directory or repo opening events
   //open respository from branch and display top level tree contents
   $(document).on("click", ".file-open-branch", function(){
     var url = $(this).attr("data-url");
     var branch = $(this).attr("data-branch");
     var branchSha = $(this).attr("data-branch-sha");
+    var repo = url.split("https://api.github.com/repos/")[1];
     //retrieveDirectoryCommits(url, access_token)
-    retrieveRepoTree(url, access_token, branch, branchSha);
+    Open.displayOpenTree(url, gon.access_token, branch, branchSha, "", repo);
   // select repo and liste available branches
   });
   $(document).on("click", ".file-open-repo", function(){
     var url = $(this).attr("data-url");
     var branch = $(this).attr("data-branch");
-    getRepoBranches(url, access_token);
+    Open.displayOpenRepoBranchList(url, gon.access_token);
+
   });
   $(document).on("click", ".create-fork", function(){
     var url = $(this).attr("data-url");
     var repo = url.split("https://api.github.com/repos/")[1];
-    console.log("repo for create fork", repo);
-    createFork(repo, access_token);
+    Open.createOpenFork(repo, gon.access_token);
   });
   //display contents of a git tree
   $(document).on("click",".file-open-tree", function(){
@@ -91,197 +167,208 @@ $(document).ready(function(){
     var branch = $(this).attr("data-branch");
     var branchSha = $(this).attr("data-branch-sha");
     var repo = $(this).attr("data-repo");
-    retrieveTreeTree(url, access_token, path, branch, branchSha, repo);
+    Open.displayOpenTree(url, gon.access_token, branch, branchSha, path, repo);
   });
   $(document).on("submit", "#create-new-branch", function(e){
     e.preventDefault();
-    console.log(e)
     var branchName = $(e.target).find("#branch").val();
     var repo = $(e.target).find("#repo").val();
     var branchSourceSha = $(e.target).find("#branch-source-sha").val();
-    createNewBranch(repo, branchName, branchSourceSha, access_token);
+    Open.createNewOpenBranch(repo, branchName, branchSourceSha, gon.access_token);
+  });
+  $(document).on("submit", "#create-new-save-as-branch", function(e){
+    e.preventDefault();
+    var branchName = $(e.target).find("#branch").val();
+    var repo = $(e.target).find("#repo").val();
+    var branchSourceSha = $(e.target).find("#branch-source-sha").val();
+    //displaySaveAsTree(url, branch, branchSha, access_token);
+    SaveAs.createNewSaveAsBranch(repo, branchName, branchSourceSha, gon.access_token);
+  });
+  $(document).on("submit", "#create-new-repo", function(e){
+    e.preventDefault();
+    var name = $(e.target).find("#new-repo-name").val();
+    SaveAs.createNewRepo(name);
   });
 
-/// FUNCTIONS
+  $("#editor-wrapper").on("click", function(){
+    $(".file-window").removeClass("visible");
+    $('#editor').removeClass("darkened");
+    $('#preview').removeClass("darkened");
+  });
 
-// ===========Save Functions =================
+  $("#save-form").submit(function(e){
+    e.preventDefault();
+    var textContent = aceEditor.getValue();
+    var content = Base64.encode(textContent);
 
-// save file using save form data-xmlns
-$("#save-form").submit(function(e){
-  e.preventDefault();
-  var textContent = $("#editor-text-area").val();
-  var content = Base64.encode(textContent);
+    var url = $(this).find("#save-url").text();
+    var branch = $(this).find("#branch").val();
+    var sha = $(this).find("#sha").val();
+    var message = $(this).find("#message").val();
 
-  //var content = btoa($("#editor-text-area").text());
-  var url = $(this).find("#save-url").val();
-  var branch = $(this).find("#branch").val();
-  var sha = $(this).find("#sha").val();
-  var message = $(this).find("#message").val();
-  var commiterName = gon.name;
-  var commiterEmail = gon.email;
-
-  var commit_data = {
-    "path": url,
-    "message": message,
-    "committer": {
-      "name": commiterName,
-      "email": commiterEmail
-      },
-    "content": content,
-    "sha": sha,
-    "branch": branch
+    var commit_data = {
+      "path": url,
+      "message": message,
+      "content": content,
+      "sha": sha,
+      "branch": branch
     }
 
-    //update content
-    //TODO: move this to separate function
-    url_with_access = url.includes("?") ? url + "&access_token=" + gon.access_token : url + "?access_token=" + gon.access_token
+    SaveAs.saveFile(url, commit_data, gon.access_token);
+  });
+});
+
+var Util = {
+  access_token: gon.access_token,
+  retrieveAPIData: function(url, access_token){
+    url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
+    return $.get(url_with_access);
+  },
+  parseXMLContent: function(data){
+    var content = Base64.decode(data.content);
+    return content;
+  },
+  addXMLContent: function(content){
+    aceEditor.setValue(content);
+    aceEditor.clearSelection();
+    aceEditor.gotoLine(0);
+    aceEditor.scrollToLine(0);
+  },
+  createPreviewContent: function(content){
+    var newText = Rendering.tei_conversion(content, function(data){});
+    $("#preview").html(newText);
+  },
+  setSaveParameters: function(data){
+    var branch = data.url.split("?ref=")[1]
+    var repo = data.repo ? data.repo : data.url.split("https://api.github.com/repos/")[1].split("/contents/")[0];
+    path = data.path.split("/" + data.name)[0] === data.name ? "" : data.path.split("/" + data.name)[0];
+    $("#sha").val(data.sha);
+    $("#save-url").html(data.url);
+    $("#repo").val(repo);
+    $("#path").val(path);
+    $("#file-name").val(data.name);
+    $("#branch").val(branch);
+    $('#message').val("");
+
+    Doc.set(data)
+    Repo.retrieveAndSetRepoState("https://api.github.com/repos/" + repo, Util.access_token)
+  },
+  clearSaveParamters: function(){
+    $("#sha").val("");
+    $("#save-url").html("");
+    $("#repo").val("");
+    $("#path").val("");
+    $("#file-name").val("");
+    $("#branch").val("");
+    $('#message').val("");
+
+    Doc.set(null);
+    Repo.set(null);
+  },
+  loadText: function(url, access_token){
+    var _this = this;
+    _this.retrieveAPIData(url, access_token).done(function(data){
+      var content = Util.parseXMLContent(data);
+      _this.addXMLContent(content);
+      _this.createPreviewContent(content);
+      _this.setSaveParameters(data);
+    });
+  },
+  // TODO: this function still relies on a sinatra route, but should be any easy fix.
+  loadTemplateText: function(){
+    var _this = this;
+    $.get("/doc", function(data){
+      Util.clearSaveParamters();
+      _this.addXMLContent(data);
+      _this.createPreviewContent(data);
+    });
+  }
+}
+
+// note: after a file is saved, if you immediately navigate away and then come back to that file
+//github is sometimes still serviing the file, because it hasn't updated yet.
+//This could cause some real headaches for users.
+
+//===========SAVE AS COMPONENT
+var SaveAs = {
+  saveFile: function(url, commitData, access_token){
+    url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token
     $.ajax({
       url: url_with_access, // your api url
       type: 'put', // type is any HTTP method
       contentType: "application/json",
       //JSON.stringify seems required; it's the only way I could get it to work
-      data: JSON.stringify(commit_data),
+      data: JSON.stringify(commitData),
 
       success: function(data, status, res) {
-        console.log(res.responseJSON.content)
         //updates save parameters; specifically it resets save form with newest shaw
-        setSaveParameters(res.responseJSON.content)
-        $('#message').val("");
-        $('#save').css({"display": "none"});
+        Util.setSaveParameters(res.responseJSON.content)
+        $('#save').removeClass("visible");
+        $('#editor').removeClass("darkened");
+        $('#preview').removeClass("darkened");
       },
       error: function(res, status, error){
         console.log(res, status, error)
       }
     });
-  });
-
-});
-
-//=============DIRECTORY BROWSER FUNCTIONS =================
-function retrieveDirectoryCommits(repo_base, access_token, branch){
-  console.log("TEST")
-  //set branch default to "master"
-  branch = (typeof branch !== 'undefined') ?  branch : "master";
-
-  var url = repo_base + "/commits/" + branch;
-  var url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
-  $.ajax({
-    url: url_with_access, // your api url
-    type: 'get', // type is any HTTP method
-    contentType: "application/json",
-    //JSON.stringify seems required; it's the only way I could get it to work
-    success: function(data, status, res) {
-      console.log("direcet directory commits", res)
-      //updates save parameters; specifically it resets save form with newest shaw
-
-
-    },
-    error: function(res, status, error){
-      console.log(res, status, error)
+  },
+  displaySaveAsTree: function(url, branch, branchSha, access_token){
+    var tree_url = url;
+    if ( url.includes("/git/trees/")){
+      var tree_url = url;
     }
-  });
-}
-function getRepoBranches(repo_base, access_token){
-  var url = repo_base + "/branches";
-  retrieveAPIData(url, access_token).done(function(data){
-    console.log(data);
-    displayRepoBranches(data, repo_base);
-  });
-}
-function displayRepoBranches(data, repo_base){
-  var repo = repo_base.split("https://api.github.com/repos/")[1];
-  $("#repo-browser-list").empty();
-  $("#repo-browser").css({"display": "block"});
-  $("#repo-browser-list").append('<h1>Available Branches</h1>');
-  //$("#repo-browser-list").append('<p><a class="file-open-dir">' + "Back to Repo List" +'</a></li>');
-  for (var i = 0, len = data.length; i < len; i++) {
-    $("#repo-browser-list").append('<li><a class="file-open-branch" data-branch-sha="' + data[i].commit.sha + '" data-url="'+ repo_base + '" data-branch="' + data[i].name + '">' + data[i].name +'</a> --> create new branch --> <form id="create-new-branch"><input id="branch" name="branch" placeholder="gh-pages"></input><input type="hidden" id="repo" name="repo" value="' + repo + '"/><input type="hidden" id="branch-source-sha" name="branch-source-sha" value="' + data[i].commit.sha + '"/><input type="submit"/></form></li>');
-  }
-
-}
-function retrieveRepoTree(repo_base, access_token, branch, branchSha){
-  //set branch default to "master"
-  var repo = repo_base.split("https://api.github.com/repos/")[1];
-  branch = (typeof branch !== 'undefined') ?  branch : "master";
-  var url = repo_base + "/git/trees/" + branch;
-  var url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
-  $.ajax({
-    url: url_with_access, // your api url
-    type: 'get', // type is any HTTP method
-    contentType: "application/json",
-    success: function(data, status, res) {
-      console.log("direcet directory commits", res)
-      displayTree(res.responseJSON.tree, "", branch, branchSha, repo);
-      //updates save parameters; specifically it resets save form with newest shaw
-
-
-    },
-    error: function(res, status, error){
-      console.log(res, status, error)
+    else{
+      var tree_url = url + "/git/trees/" + branch;
     }
-  });
 
-}
+    $("#save-as-file-browser-list-wrapper").empty();
+    Util.retrieveAPIData(tree_url, access_token).done(function(data){
+      var tree = data.tree;
+      for (var i = 0, len = data.tree.length; i < len; i++) {
+        if (tree[i].type === 'blob' && tree[i].path.includes('.xml')){
+          $("#save-as-file-browser-list-wrapper").append('<li style="color: gray">' + tree[i].path +'</a></li>');
+        }
+        else if (tree[i].type === 'blob' && !tree[i].path.includes('.xml')){
+          $("#save-as-file-browser-list-wrapper").append('<li style="color: gray">' + tree[i].path +'</li>');
+        }
+        else if (tree[i].type === 'tree'){
+          $("#save-as-file-browser-list-wrapper").append('<li><a class="file-open-save-as-path" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + tree[i].path + '">' + tree[i].path +'</a></li>');
+        }
+      }
+    });
 
-function retrieveTreeTree(tree_url, access_token, parent_path, branch, branchSha, repo){
-  retrieveAPIData(tree_url, access_token).done(function(data){
-
-    displayTree(data.tree, parent_path, branch, branchSha, repo, tree_url);
-
-  });
-
-
-}
-function displayRepoList(url, access_token){
-  url = url + "?per_page=100";
-  retrieveAPIData(url, access_token).done(function(data){
+  },
+  displaySaveAsRepoList: function(url, access_token){
+    url = url + "?per_page=100";
+    Util.retrieveAPIData(url, access_token).done(function(data){
+      $("#repo-browser-branch").empty();
+      $("#save-as-file-browser-list-wrapper").empty();
+      for (var i = 0, len = data.length; i < len; i++) {
+        $("#save-as-file-browser-list-wrapper").append('<li><a class="file-open-save-as-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
+      }
+    });
+  },
+  displaySaveAsRepoBranchList: function(repo_base, access_token){
+    var url = repo_base + "/branches";
+    var repo = repo_base.split("https://api.github.com/repos/")[1];
     $("#repo-browser-branch").empty();
-    for (var i = 0, len = data.length; i < len; i++) {
-      $("#repositories").append('<li><a class="file-open-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
-    }
-  });
-}
-
-function displayTree(tree, path, branch, branchSha, repo, parent_tree_url){
-
-  $("#repo-browser-list").empty();
-  $("#repo-browser-branch").empty();
-  $("#repo-browser").css({"display": "block"});
-  if (branch === "gh-pages"){
-    $("#repo-browser-branch").html('<p>' + branch + '</p><p><a href="http://' + repo.split('/')[0] +'.github.io/' + repo.split('/')[1] + '" target="_blank">View on gh-pages</a></p>');
-  }
-  else{
-    $("#repo-browser-branch").html('<p>' + branch + '</p>');
-  }
-
-  if (path){
-    //bug, this keeps appending even when you are moving back up the tree
-    $("#breadcrumbs").append(' / <a class="file-open-tree" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ parent_tree_url + '" data-path="' + path + '">' + path.split("/").pop() +'</a>');
-  }
-  for (var i = 0, len = tree.length; i < len; i++) {
-    if (tree[i].type === 'blob' && tree[i].path.includes('.xml')){
-      $("#repo-browser-list").append('<li><a class="file-open-file-list" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + path + "/" + tree[i].path + '">' + tree[i].path +'</a></li>');
-    }
-    else if (tree[i].type === 'blob' && !tree[i].path.includes('.xml')){
-      $("#repo-browser-list").append('<li style="color: gray">' + tree[i].path +'</li>');
-    }
-    else if (tree[i].type === 'tree'){
-      $("#repo-browser-list").append('<li><a class="file-open-tree" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + path + "/" + tree[i].path + '">' + tree[i].path +'</a></li>');
-    }
-  }
-}
-
-//Create new branch
-
-function createNewBranch(repo, branchName, branchSourceSha, access_token){
-  new_branch_data = {
-      "ref": "refs/heads/" + branchName,
-      "sha": branchSourceSha
-    }
+    $("#save-as-file-browser-list-wrapper").empty();
+    Util.retrieveAPIData(url, access_token).done(function(data){
+      $("#save-as-file-browser-list-wrapper").empty();
+      for (var i = 0, len = data.length; i < len; i++) {
+        $("#save-as-file-browser-list-wrapper").append('<li><a class="file-open-save-as-branch" data-branch-sha="' + data[i].commit.sha + '" data-url="'+ repo_base + '" data-branch="' + data[i].name + '">' + data[i].name +'</a> --> create new branch --> <form id="create-new-save-as-branch"><input id="branch" name="branch" placeholder="gh-pages"></input><input type="hidden" id="repo" name="repo" value="' + repo + '"/><input type="hidden" id="branch-source-sha" name="branch-source-sha" value="' + data[i].commit.sha + '"/><input type="submit"/></form></li>');
+      }
+    });
+  },
+  createNewSaveAsBranch: function(repo, branchName, branchSourceSha, access_token){
+    var _this = this;
+    new_branch_data = {
+        "ref": "refs/heads/" + branchName,
+        "sha": branchSourceSha
+      }
     var url = "https://api.github.com/repos/" + repo + "/" + "git/refs"
     var url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
-    console.log("url", url_with_access);
-    console.log("new_branch_data", new_branch_data);
+
     $.ajax({
       url: url_with_access, // your api url
       type: 'post', // type is any HTTP method
@@ -290,87 +377,242 @@ function createNewBranch(repo, branchName, branchSourceSha, access_token){
       data: JSON.stringify(new_branch_data),
 
       success: function(data, status, res) {
-        console.log(res)
+
         repo_base = "https://api.github.com/repos/" + repo;
-        retrieveRepoTree(repo_base, access_token, branchName, branchSourceSha)
+        $("#branch").val(branchName);
+        $("#sha").val(branchSourceSha);
+        _this.displaySaveAsTree(repo_base, branchName, branchSourceSha, access_token);
       },
       error: function(res, status, error){
         console.log(res, status, error)
       }
     });
-
-}
-
-function createFork(repo, access_token){
-    var url = "https://api.github.com/repos/" + repo + "/forks";
+  },
+  createNewRepo: function(name){
+    var _this = this;
+    access_token = Util.access_token;
+    var url = "https://api.github.com/user/repos"
     var url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
+    content = {
+      "name": name,
+      "auto_init": true
+    }
     $.ajax({
       url: url_with_access, // your api url
       type: 'post', // type is any HTTP method
-      success: function(data, status, res) {
-        console.log("create fork response", res)
-        var forkedRepoBase = res.responseJSON.url;
-        getRepoBranches(forkedRepoBase, access_token);
+      contentType: "application/json",
+      //JSON.stringify seems required; it's the only way I could get it to work
+      data: JSON.stringify(content),
 
+      success: function(data, status, res) {
+        repo = res.responseJSON.full_name
+        $("#repo").val(repo);
+        var path = $("#path").val().length > 0 ? $("#path").val() + "/" : "";
+        $("#save-url").html("https://api.github.com/repos/" + $("#repo").val() + "/contents/" + path + $("#file-name").val() + "?ref=" + $("#branch").val());
+        _this.displaySaveAsRepoBranchList(res.responseJSON.url, access_token)
       },
       error: function(res, status, error){
         console.log(res, status, error)
       }
     });
+  }
 
 }
 
-// Utility functions
+//File Open COMPONENT
 
-function retrieveAPIData(url, access_token){
-  url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
-  return $.get(url_with_access);
+var Open = {
+  displayOpenTree: function(repo_base, access_token, branch, branchSha, path, repo){
+  //function displayTree(tree, path, branch, branchSha, repo, parent_tree_url){
+  //function retrieveRepoTree(repo_base, access_token, branch, branchSha){
+    $("#repo-browser-list").empty();
+    $("#repo-browser-branch").empty();
+    $("#repo-browser").addClass("visible");
+
+    var parent_tree_url = repo_base;
+    var branch = (typeof branch !== 'undefined') ?  branch : "master";
+
+    if (repo_base.includes("/git/trees/")){
+      var url = repo_base
+    }
+    else{
+      var url = repo_base + "/git/trees/" + branch;
+    }
+
+    Util.retrieveAPIData(url, access_token).done(function(data){
+      var tree = data.tree
+      if (branch === "gh-pages"){
+        $("#repo-browser-branch").html('<p>' + branch + '</p><p><a href="http://' + repo.split('/')[0] +'.github.io/' + repo.split('/')[1] + '" target="_blank">View on gh-pages</a></p>');
+      }
+      else{
+        $("#repo-browser-branch").html('<p>' + branch + '</p>');
+      }
+      if (path){
+        //bug, this keeps appending even when you are moving back up the tree
+        $("#breadcrumbs").append(' / <a class="file-open-tree" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ parent_tree_url + '" data-path="' + path + '">' + path.split("/").pop() +'</a>');
+      }
+      for (var i = 0, len = tree.length; i < len; i++) {
+        if (tree[i].type === 'blob' && tree[i].path.includes('.xml')){
+          $("#repo-browser-list").append('<li><a class="file-open-file-list" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + path + "/" + tree[i].path + '">' + tree[i].path +'</a></li>');
+        }
+        else if (tree[i].type === 'blob' && !tree[i].path.includes('.xml')){
+          $("#repo-browser-list").append('<li style="color: gray">' + tree[i].path +'</li>');
+        }
+        else if (tree[i].type === 'tree'){
+          $("#repo-browser-list").append('<li><a class="file-open-tree" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + path + "/" + tree[i].path + '">' + tree[i].path +'</a></li>');
+        }
+      }
+    });
+  },
+  createNewOpenBranch: function(repo, branchName, branchSourceSha, access_token){
+    var _this = this;
+    new_branch_data = {
+        "ref": "refs/heads/" + branchName,
+        "sha": branchSourceSha
+      }
+      var url = "https://api.github.com/repos/" + repo + "/" + "git/refs"
+      var url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
+      $.ajax({
+        url: url_with_access, // your api url
+        type: 'post', // type is any HTTP method
+        contentType: "application/json",
+        //JSON.stringify seems required; it's the only way I could get it to work
+        data: JSON.stringify(new_branch_data),
+
+        success: function(data, status, res) {
+          repo_base = "https://api.github.com/repos/" + repo;
+          _this.displayOpenTree(repo_base, access_token, branchName, branchSourceSha, repo)
+        },
+        error: function(res, status, error){
+          console.log(res, status, error)
+        }
+      });
+
+  },
+  displayOpenRepoBranchList: function(repo_base, access_token){
+    var url = repo_base + "/branches";
+    Util.retrieveAPIData(url, access_token).done(function(data){
+
+      var repo = repo_base.split("https://api.github.com/repos/")[1];
+      $("#repo-browser-list").empty();
+      $("#repo-browser").addClass("visible");
+      $("#repo-browser-list").append('<h1>Available Branches</h1>');
+      //$("#repo-browser-list").append('<p><a class="file-open-dir">' + "Back to Repo List" +'</a></li>');
+      for (var i = 0, len = data.length; i < len; i++) {
+        $("#repo-browser-list").append('<li><a class="file-open-branch" data-branch-sha="' + data[i].commit.sha + '" data-url="'+ repo_base + '" data-branch="' + data[i].name + '">' + data[i].name +'</a> --> create new branch --> <form id="create-new-branch"><input id="branch" name="branch" placeholder="gh-pages"></input><input type="hidden" id="repo" name="repo" value="' + repo + '"/><input type="hidden" id="branch-source-sha" name="branch-source-sha" value="' + data[i].commit.sha + '"/><input type="submit"/></form></li>');
+      }
+    });
+  },
+  displayOpenRepoList: function(url, access_token){
+    url = url + "?per_page=100";
+    Util.retrieveAPIData(url, access_token).done(function(data){
+      $("#repo-browser-branch").empty();
+      $("#recentfiles").empty();
+      for (var i = 0, len = Recent.files.length; i < len; i++) {
+        $("#recentfiles").append('<li><a class="file-open-file" data-url="'+ Recent.files[i] + '">' + Recent.files[i] +'</a></li>');
+      }
+      for (var i = 0, len = data.length; i < len; i++) {
+        $("#repositories").append('<li><a class="file-open-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
+      }
+    });
+  },
+  createOpenFork: function(repo, access_token){
+      var url = "https://api.github.com/repos/" + repo + "/forks";
+      var url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
+      $.ajax({
+        url: url_with_access, // your api url
+        type: 'post', // type is any HTTP method
+        success: function(data, status, res) {
+
+          var forkedRepoBase = res.responseJSON.url;
+          Open.displayOpenRepoBranchList(forkedRepoBase, access_token);
+          //getRepoBranches(forkedRepoBase, access_token);
+
+        },
+        error: function(res, status, error){
+          console.log(res, status, error)
+        }
+      });
+
+  }
 }
 
-function parseXMLContent(data){
-  var content = Base64.decode(data.content);
-  return content;
-
+var Pr = {
+  displayPullRequestInfo: function(current, target){
+    if (Repo.state){
+      if (Repo.state.parent){
+        var branch = Doc.state.url.split("?ref=")[1];
+        $("#current-repo").html("<p id='current' data-repo='" + Repo.state.full_name + "' data-branch='" + branch + "'>Current Repo: " + Repo.state.url + ": Branch: " + branch + "</p>");
+        $("#target-repo").html("<p id='target' data-repo='" + Repo.state.parent.full_name + "' data-branch='" + Repo.state.parent.default_branch + "'>Target Repo: " + Repo.state.parent.url + ": Branch: " + Repo.state.parent.default_branch + "</p>");
+        $("#pull-request-viewer").append('<button type="button" id="submit-pull-request" class="btn btn-primary">Submit for Reivew</button>');
+      }
+      else{
+        $("#current-repo").html("<p>This repo was not forked from a parent repo.</p>");
+      }
+    }
+    else {
+      $("#current-repo").html("<p>No document open for submission</p>");
+    }
+  },
+  submitPullRequest: function(currentRepo, currentBranch, targetRepo, targetBranch){
+    var url = "https://api.github.com/repos/" + targetRepo + "/pulls"
+    var currentUsername = currentRepo.split("/")[0];
+    pr = {
+    "title": "Pull request sumbitted from TEI Web Editor",
+    "body": "Please pull this in!",
+    "head": currentUsername + ":" + currentBranch,
+    "base": targetBranch
+    }
+    var url_with_access = url.includes("?") ? url + "&access_token=" + Util.access_token : url + "?access_token=" + Util.access_token;
+    $.ajax({
+      url: url_with_access, // your api url
+      type: 'post', // type is any HTTP method
+      contentType: "application/json",
+      //JSON.stringify seems required; it's the only way I could get it to work
+      data: JSON.stringify(pr),
+      success: function(data, status, res) {
+        $("#current-repo").empty("pull request succcessfully submitted")
+        $("#target-repo").empty()
+        $("#submit-pull-request").remove();
+      },
+      error: function(res, status, error){
+        console.log("res", res);
+        console.log("status", status);
+        console.log("error", error);
+        $("#current-repo").html("Github response: " + res.responseJSON.errors[0].message);
+        $("#target-repo").empty()
+        $("#submit-pull-request").remove();
+      }
+    });
+  }
 }
 
-function addXMLContent(content){
-  aceEditor.setValue(content);
-  aceEditor.clearSelection();
-  aceEditor.gotoLine(0);
-  aceEditor.scrollToLine(0);
+var Doc = {
+  state: null,
+  set: function(data){
+    this.state = data;
+  }
 }
 
-function createPreviewContent(content){
-  var newText = tei_conversion(content, function(data){});
-  $("#preview").html(newText);
+var Repo = {
+  state: null,
+  set: function(data){
+    this.state = data
+  },
+  retrieveAndSetRepoState: function(url, access_token){
+    var _this = this;
+    Util.retrieveAPIData(url, access_token).done(function(data){
+      _this.set(data);
+    });
+  }
 }
 
-function setSaveParameters(data){
-  var sha = data.sha
-  var url = data.url.split("?ref=")[0]
-  var branch = data.url.split("?ref=")[1] ? data.url.split("?ref=")[1] : state["branch"];
-  $("#sha").attr("value", sha );
-  $("#save-url").attr("value", url);
-  $("#branch").attr("value", branch );
-
+var Recent = {
+  files: [],
+  set: function(file){
+    this.files.push(file);
+  }
 }
-
-function loadText(url, access_token){
-  retrieveAPIData(url, access_token).done(function(data){
-    var content = parseXMLContent(data);
-    addXMLContent(content);
-    createPreviewContent(content);
-    setSaveParameters(data);
-  });
-}
-// TODO: this function still relies on a sinatra route, but should be any easy fix.
-function loadTemplateText(){
-  $.get("/doc", function(data){
-    addXMLContent(data);
-    createPreviewContent(data);
-  });
-}
-
 
 // note: after a file is saved, if you immediately navigate away and then come back to that file
 //github is sometimes still serviing the file, because it hasn't updated yet.
@@ -380,7 +622,8 @@ function loadTemplateText(){
 
 // custom tei conversion that doesn't repeat registering elements
 // code pulled from CETEI library; registering elemeents fucntions is then cut-out
-tei_conversion = function(TEI, callback, perElementFn){
+var Rendering = {
+  tei_conversion: function(TEI, callback, perElementFn){
 
   TEI_dom = ( new DOMParser() ).parseFromString(TEI, "text/xml");
   let convertEl = (el) => {
@@ -477,4 +720,5 @@ tei_conversion = function(TEI, callback, perElementFn){
       html = convertEl(TEI_dom.documentElement);
       //console.log(html);
       return html;
+}
 }
