@@ -52,7 +52,6 @@ height: 100%
   transition:all 1s;
   display: none;
   position: fixed;
-  z-index: 1;
   top: 20%;
   left: 20%;
   width: 60%;
@@ -61,7 +60,7 @@ height: 100%
   overflow: scroll;
   box-sizing: border-box;
   padding: 5%;
-  z-index: 10;
+  z-index: 18000;
 }
 .visible{
   transition:all 1s;
@@ -71,7 +70,7 @@ height: 100%
 
 }
 #save{
-  
+
 }
 
 .darkened{
@@ -79,4 +78,11 @@ height: 100%
   -webkit-box-shadow: 0px 0px 1px 5000px rgba(0,0,0,0.8);
   -moz-box-shadow: 0px 0px 1px 5000px rgba(0,0,0,0.8);
   box-shadow: 0px 0px 1px 5000px rgba(0,0,0,0.8);
+}
+
+#mirador-viewer {
+  width: 100%;
+  height: 40%;
+  position: relative;
+  top: 0;
 }

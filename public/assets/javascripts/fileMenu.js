@@ -4,6 +4,13 @@ $(document).ready(function(){
   aceEditor = ace.edit("editor");
   aceEditor.setTheme("ace/theme/kuroir");
   aceEditor.session.setMode("ace/mode/xml");
+  aceEditor.session.setOptions({
+    tabSize: 2,
+    useSoftTabs: true
+  });
+  aceEditor.setShowInvisibles(true);
+
+
 
   // load empty template onload
   Util.loadTemplateText();
@@ -21,11 +28,27 @@ $(document).ready(function(){
   });
 
 
+
+
 //===============BINDING ENVENTS =========================//
   // open pr review dialogue box
+  $(document).on("click", "#toggle-mirador", function(){
+    $('#mirador-viewer').slideToggle();
+  });
+  $(document).on("click", "#toggle-preview", function(){
+    if ($('#preview').is(':visible')){
+      $("#editor").animate({"width": "100%"})
+      $('#preview').slideToggle();
+    }
+    else{
+      $("#editor").animate({"width": "50%"})
+      $('#preview').slideToggle();
+    }
+  });
   $(document).on("click", "#file-pr", function(){
     $('#editor').addClass("darkened");
     $('#preview').addClass("darkened");
+    //Util.darken();
     $('.file-window').removeClass("visible")
     $('#pull-request-viewer').addClass("visible")
     Pr.displayPullRequestInfo();
@@ -41,6 +64,7 @@ $(document).ready(function(){
   $(document).on("click",".file-open-dir", function(){
     $('#editor').addClass("darkened");
     $('#preview').addClass("darkened");
+    //Util.darken();
     $('.file-window').removeClass("visible")
     $('#breadcrumbs').empty();
     $("#repositories").empty();
@@ -55,6 +79,7 @@ $(document).ready(function(){
     SaveAs.displaySaveAsRepoList(url, gon.access_token);
     $('#editor').addClass("darkened");
     $('#preview').addClass("darkened");
+    //Util.darken();
     $('#save').addClass("visible");
 
   });
@@ -114,6 +139,7 @@ $(document).ready(function(){
   $(document).on("click",".file-open-file", function(){
     var url = $(this).attr("data-url");
     $('.file-window').removeClass("visible");
+    //Util.undarken();
     $('#editor').removeClass("darkened");
     $('#preview').removeClass("darkened");
     Util.loadText(url, gon.access_token)
@@ -122,6 +148,9 @@ $(document).ready(function(){
   $("#file-manual").submit(function(e){
     e.preventDefault();
     $('.file-window').removeClass("visible");
+    //Util.undarken();
+    $('#editor').removeClass("darkened");
+    $('#preview').removeClass("darkened");
     var url = $(this).find("#manual-url").val();
     Util.loadText(url, gon.access_token)
   });
@@ -135,6 +164,7 @@ $(document).ready(function(){
     $('.file-window').removeClass("visible");
     $('#editor').removeClass("darkened");
     $('#preview').removeClass("darkened");
+    //Util.undarken();
     Recent.set(url);
     Util.loadText(url, gon.access_token)
   });
@@ -194,6 +224,7 @@ $(document).ready(function(){
     $(".file-window").removeClass("visible");
     $('#editor').removeClass("darkened");
     $('#preview').removeClass("darkened");
+    //Util.undarken();
   });
 
   $("#save-form").submit(function(e){
@@ -219,6 +250,17 @@ $(document).ready(function(){
 });
 
 var Util = {
+  // no idea why these are not working
+  undarken: function(){
+    $('#editor').removeClass("darkened");
+    $('#preview').removeClass("darkened");
+  },
+  // no idea why these are not working
+  darken: function(){
+    console.log($("#preview"));
+    $('#editor').removeClass("darkened");
+    $('#preview').removeClass("darkened");
+  },
   access_token: gon.access_token,
   retrieveAPIData: function(url, access_token){
     url_with_access = url.includes("?") ? url + "&access_token=" + access_token : url + "?access_token=" + access_token;
@@ -304,6 +346,7 @@ var SaveAs = {
         //updates save parameters; specifically it resets save form with newest shaw
         Util.setSaveParameters(res.responseJSON.content)
         $('#save').removeClass("visible");
+        //Util.undarken();
         $('#editor').removeClass("darkened");
         $('#preview').removeClass("darkened");
       },
