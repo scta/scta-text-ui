@@ -61,6 +61,7 @@ height: 100%
   overflow: scroll;
   box-sizing: border-box;
   padding: 5%;
+  z-index: 10;
 }
 .visible{
   transition:all 1s;
@@ -70,7 +71,7 @@ height: 100%
 
 }
 #save{
-  z-index: 10;
+  
 }
 
 .darkened{
