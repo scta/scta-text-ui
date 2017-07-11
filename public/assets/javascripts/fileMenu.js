@@ -571,7 +571,7 @@ var Pr = {
       //JSON.stringify seems required; it's the only way I could get it to work
       data: JSON.stringify(pr),
       success: function(data, status, res) {
-        $("#current-repo").empty("pull request succcessfully submitted")
+        $("#current-repo").html("pull request succcessfully submitted")
         $("#target-repo").empty()
         $("#submit-pull-request").remove();
       },
