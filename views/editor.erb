@@ -9,30 +9,27 @@
   <div>
     <form id="file-manual">
       <div class="form-group">
-        <label for="manual-url">Enter a file url here</label>
+        <label for="manual-url"><h3>Add by URL</h3></label>
         <input type="text" class="form-control" id="manual-url" name="manual-url" placeholder="https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml?ref=sandbox">
       </div>
       <button type="submit" class="btn btn-default">Submit</button>
     </form>
   </div>
   <div>
-    <p>Recent Files</p>
-    <ul id="recentfiles">
-      <li>
-        <a href="#" class="file-open-file" data-url="https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml?ref=sandbox">https://api.github.com/repos/scta-texts/summahalensis/contents/ahsh-l1p1i1t1q1c1/ahsh-l1p1i1t1q1c1.xml?ref=sandbox</a>
-      </li>
+    <h3>Recent Files</h3>
+    <ul class="list-unstyled" id="recentfiles">
     </ul>
   </div>
   <div>
-    <p>My Repositories</p>
-    <ul id="repositories">
+    <h3>My Repositories</h3>
+    <ul class="list-unstyled" id="repositories">
     </ul>
   </div>
   <div>
-    <p>Suggested Repositories</p>
-    <ul id="suggested-repositories">
-      <li><a href="#" class="create-fork" data-url="https://api.github.com/repos/scta-texts/summahalensis">Create fork of https://api.github.com/repos/scta-texts/summahalensis</a></li>
-      <li><a href="#" class="create-fork" data-url="https://api.github.com/repos/scta/simple-tei-edition"> Create fork of https://api.github.com/repos/scta/simple-tei-edition</a></li>
+    <h3>Suggested Repositories</h3>
+    <ul class="list-unstyled" id="suggested-repositories">
+      <li><a href="#" class="create-fork" data-url="https://api.github.com/repos/scta-texts/summahalensis">Fork https://api.github.com/repos/scta-texts/summahalensis</a></li>
+      <li><a href="#" class="create-fork" data-url="https://api.github.com/repos/scta/simple-tei-edition">Fork https://api.github.com/repos/scta/simple-tei-edition</a></li>
     </ul>
   </div>
 </div>
@@ -42,7 +39,7 @@
     </div>
     <div id="breadcrumbs">
     </div>
-    <a href="#" class="file-open-dir">Back to Repo List</a></li>
+    <a href="#" class="file-open-dir">Back to Repository List</a></li>
     <div id="repo-browser-list"></div>
   </p>
 </div>

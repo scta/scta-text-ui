@@ -574,8 +574,12 @@ var Open = {
     Util.retrieveAPIData(url, access_token).done(function(data){
       $("#repo-browser-branch").empty();
       $("#recentfiles").empty();
-      for (var i = 0, len = Recent.files.length; i < len; i++) {
-        $("#recentfiles").append('<li><a href="#" class="file-open-file" data-url="'+ Recent.files[i] + '">' + Recent.files[i] +'</a></li>');
+      if (Recent.files.length === 0) {
+        $("#recentfiles").append('<li>No recent files available</li>');        
+      } else {
+        for (var i = 0, len = Recent.files.length; i < len; i++) {
+          $("#recentfiles").append('<li><a href="#" class="file-open-file" data-url="'+ Recent.files[i] + '">' + Recent.files[i] +'</a></li>');
+        }
       }
       for (var i = 0, len = data.length; i < len; i++) {
         $("#repositories").append('<li><a href="#" class="file-open-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
