@@ -398,7 +398,7 @@ var SaveAs = {
           $("#save-as-file-browser-list-wrapper").append('<li style="color: gray">' + tree[i].path +'</li>');
         }
         else if (tree[i].type === 'tree'){
-          $("#save-as-file-browser-list-wrapper").append('<li><a class="file-open-save-as-path" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + tree[i].path + '">' + tree[i].path +'</a></li>');
+          $("#save-as-file-browser-list-wrapper").append('<li><a href="#" class="file-open-save-as-path" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + tree[i].path + '">' + tree[i].path +'</a></li>');
         }
       }
     });
@@ -410,7 +410,7 @@ var SaveAs = {
       $("#repo-browser-branch").empty();
       $("#save-as-file-browser-list-wrapper").empty();
       for (var i = 0, len = data.length; i < len; i++) {
-        $("#save-as-file-browser-list-wrapper").append('<li><a class="file-open-save-as-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
+        $("#save-as-file-browser-list-wrapper").append('<li><a href="#" class="file-open-save-as-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
       }
     });
   },
@@ -422,7 +422,7 @@ var SaveAs = {
     Util.retrieveAPIData(url, access_token).done(function(data){
       $("#save-as-file-browser-list-wrapper").empty();
       for (var i = 0, len = data.length; i < len; i++) {
-        $("#save-as-file-browser-list-wrapper").append('<li><a class="file-open-save-as-branch" data-branch-sha="' + data[i].commit.sha + '" data-url="'+ repo_base + '" data-branch="' + data[i].name + '">' + data[i].name +'</a> --> create new branch --> <form id="create-new-save-as-branch"><input id="branch" name="branch" placeholder="gh-pages"></input><input type="hidden" id="repo" name="repo" value="' + repo + '"/><input type="hidden" id="branch-source-sha" name="branch-source-sha" value="' + data[i].commit.sha + '"/><input type="submit"/></form></li>');
+        $("#save-as-file-browser-list-wrapper").append('<li><a href="#" class="file-open-save-as-branch" data-branch-sha="' + data[i].commit.sha + '" data-url="'+ repo_base + '" data-branch="' + data[i].name + '">' + data[i].name +'</a> --> create new branch --> <form id="create-new-save-as-branch"><input id="branch" name="branch" placeholder="gh-pages"></input><input type="hidden" id="repo" name="repo" value="' + repo + '"/><input type="hidden" id="branch-source-sha" name="branch-source-sha" value="' + data[i].commit.sha + '"/><input type="submit"/></form></li>');
       }
     });
   },
@@ -515,17 +515,17 @@ var Open = {
       }
       if (path){
         //bug, this keeps appending even when you are moving back up the tree
-        $("#breadcrumbs").append(' / <a class="file-open-tree" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ parent_tree_url + '" data-path="' + path + '">' + path.split("/").pop() +'</a>');
+        $("#breadcrumbs").append(' / <a href="#" class="file-open-tree" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ parent_tree_url + '" data-path="' + path + '">' + path.split("/").pop() +'</a>');
       }
       for (var i = 0, len = tree.length; i < len; i++) {
         if (tree[i].type === 'blob' && tree[i].path.includes('.xml')){
-          $("#repo-browser-list").append('<li><a class="file-open-file-list" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + path + "/" + tree[i].path + '">' + tree[i].path +'</a></li>');
+          $("#repo-browser-list").append('<li><a href="#" class="file-open-file-list" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + path + "/" + tree[i].path + '">' + tree[i].path +'</a></li>');
         }
         else if (tree[i].type === 'blob' && !tree[i].path.includes('.xml')){
           $("#repo-browser-list").append('<li style="color: gray">' + tree[i].path +'</li>');
         }
         else if (tree[i].type === 'tree'){
-          $("#repo-browser-list").append('<li><a class="file-open-tree" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + path + "/" + tree[i].path + '">' + tree[i].path +'</a></li>');
+          $("#repo-browser-list").append('<li><a href="#" class="file-open-tree" data-repo="' + repo + '" data-branch="' + branch + '" data-branch-sha="' + branchSha + '" data-url="'+ tree[i].url + '" data-path="' + path + "/" + tree[i].path + '">' + tree[i].path +'</a></li>');
         }
       }
     });
@@ -563,9 +563,9 @@ var Open = {
       $("#repo-browser-list").empty();
       $("#repo-browser").addClass("visible");
       $("#repo-browser-list").append('<h1>Available Branches</h1>');
-      //$("#repo-browser-list").append('<p><a class="file-open-dir">' + "Back to Repo List" +'</a></li>');
+      //$("#repo-browser-list").append('<p><a href="#" class="file-open-dir">' + "Back to Repo List" +'</a></li>');
       for (var i = 0, len = data.length; i < len; i++) {
-        $("#repo-browser-list").append('<li><a class="file-open-branch" data-branch-sha="' + data[i].commit.sha + '" data-url="'+ repo_base + '" data-branch="' + data[i].name + '">' + data[i].name +'</a> --> create new branch --> <form id="create-new-branch"><input id="branch" name="branch" placeholder="gh-pages"></input><input type="hidden" id="repo" name="repo" value="' + repo + '"/><input type="hidden" id="branch-source-sha" name="branch-source-sha" value="' + data[i].commit.sha + '"/><input type="submit"/></form></li>');
+        $("#repo-browser-list").append('<li><a href="#" class="file-open-branch" data-branch-sha="' + data[i].commit.sha + '" data-url="'+ repo_base + '" data-branch="' + data[i].name + '">' + data[i].name +'</a> --> create new branch --> <form id="create-new-branch"><input id="branch" name="branch" placeholder="gh-pages"></input><input type="hidden" id="repo" name="repo" value="' + repo + '"/><input type="hidden" id="branch-source-sha" name="branch-source-sha" value="' + data[i].commit.sha + '"/><input type="submit"/></form></li>');
       }
     });
   },
@@ -575,10 +575,10 @@ var Open = {
       $("#repo-browser-branch").empty();
       $("#recentfiles").empty();
       for (var i = 0, len = Recent.files.length; i < len; i++) {
-        $("#recentfiles").append('<li><a class="file-open-file" data-url="'+ Recent.files[i] + '">' + Recent.files[i] +'</a></li>');
+        $("#recentfiles").append('<li><a href="#" class="file-open-file" data-url="'+ Recent.files[i] + '">' + Recent.files[i] +'</a></li>');
       }
       for (var i = 0, len = data.length; i < len; i++) {
-        $("#repositories").append('<li><a class="file-open-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
+        $("#repositories").append('<li><a href="#" class="file-open-repo" data-url="'+ data[i].url + '">' + data[i].url +'</a></li>');
       }
     });
   },
