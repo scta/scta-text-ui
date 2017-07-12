@@ -31,7 +31,7 @@ $(document).ready(function(){
 
 
 //===============BINDING ENVENTS =========================//
-  // open pr review dialogue box
+  //toggle window events
   $(document).on("click", "#toggle-mirador", function(){
     $('#mirador-viewer').slideToggle();
   });
@@ -39,12 +39,35 @@ $(document).ready(function(){
     if ($('#preview').is(':visible')){
       $("#editor").animate({"width": "100%"})
       $('#preview').slideToggle();
+      if (!$('#editor').is(':visible')){
+        //mirador toggle is buggy because the styling doesn't adjust until the window is adjusted
+        $("#mirador-viewer").animate({"height": "100%"})
+      }
     }
     else{
       $("#editor").animate({"width": "50%"})
+      //mirador toggle is buggy because the styling doesn't adjust until the window is adjusted
+      $("#mirador-viewer").animate({"height": "40%"})
       $('#preview').slideToggle();
     }
   });
+  $(document).on("click", "#toggle-editor", function(){
+    if ($('#editor').is(':visible')){
+      $("#preview").animate({"width": "100%"})
+      $('#editor').slideToggle();
+      if (!$('#preview').is(':visible')){
+        //mirador toggle is buggy because the styling doesn't adjust until the window is adjusted
+        $("#mirador-viewer").animate({"height": "100%"})
+      }
+    }
+    else{
+      $("#preview").animate({"width": "50%"})
+      //mirador toggle is buggy because the styling doesn't adjust until the window is adjusted
+      $("#mirador-viewer").animate({"height": "40%"})
+      $('#editor').slideToggle();
+    }
+  });
+  // open pr review dialogue box
   $(document).on("click", "#file-pr", function(){
     $('#editor').addClass("darkened");
     $('#preview').addClass("darkened");
