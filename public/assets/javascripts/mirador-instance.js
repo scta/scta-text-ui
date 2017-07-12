@@ -2,6 +2,9 @@ $(document).ready(function(){
 var mir = Mirador({
           "id": "mirador-viewer",
           "layout": "1x1",
+          'mainMenuSettings': {
+            'show': false
+          },
           //'openManifestsPage' : false,
           "buildPath": "/assets/mirador-2.4/",
           "data" : [
@@ -15,6 +18,6 @@ var mir = Mirador({
           //   sidePanel: "true",
           //   sidePanelVisible: "false"
           // }],
-          "annotationEndpoint": { "name":"Local Storage", "module": "LocalStorageEndpoint" }
+          // "annotationEndpoint": { "name":"Local Storage", "module": "LocalStorageEndpoint" }
         });
 });

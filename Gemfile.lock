@@ -10,11 +10,8 @@ GEM
     gon-sinatra (0.1.2)
       sinatra
     method_source (0.8.2)
-    mini_portile2 (2.1.0)
     multi_json (1.12.1)
     multipart-post (2.0.0)
-    nokogiri (1.7.0.1)
-      mini_portile2 (~> 2.1.0)
     octokit (4.7.0)
       sawyer (~> 0.8.0, >= 0.5.3)
     pry (0.10.4)
@@ -50,7 +47,6 @@ PLATFORMS
 
 DEPENDENCIES
   gon-sinatra
-  nokogiri
   octokit (~> 4.0)
   pry
   puma
