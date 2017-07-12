@@ -64,7 +64,7 @@ requires html and body to be set to 100% height
   background: white;
   overflow: scroll;
   box-sizing: border-box;
-  padding: 5%;
+  padding: 1% 2% 2% 2%;
   z-index: 18000;
 }
 .visible{
