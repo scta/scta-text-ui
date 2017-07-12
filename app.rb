@@ -1,17 +1,7 @@
 require 'sinatra'
-require 'octokit'
 require 'gon-sinatra'
-require 'open-uri'
-require 'json'
-require "base64"
-require "net/https"
-require "nokogiri"
-require "sinatra/cookies"
-require "httparty"
-#require "lbp"
-require 'cgi'
+require 'octokit'
 
-require_relative "lib/pr_functions"
 require_relative "lib/get_functions"
 
 CLIENT_ID = ENV['CLIENT_ID']
@@ -43,7 +33,7 @@ end
 def authenticate!
   client = Octokit::Client.new
   scopes = ['repo', 'user']
-  url = client.authorize_url(CLIENT_ID, :scope => 'repo,user:email')
+  url = client.authorize_url(CLIENT_ID, :scope => 'repo')
 
   redirect url
 end
@@ -85,16 +75,16 @@ get '/return' do
   result = Octokit.exchange_code_for_token(session_code, CLIENT_ID, CLIENT_SECRET)
   session[:access_token] = result[:access_token]
 
-  #erb :load
   redirect '/'
 end
 
 # STEP 3 return user to main edit page
 # main edit page
 get '/editor' do
-  # get api url for target file
-  #url = params[:url]
-  # get cookie data need for view
+  if !authenticated?
+    authenticate!
+  end
+
   client = Octokit::Client.new :access_token => session[:access_token]
   data = client.user
   @username = data.login
@@ -109,19 +99,10 @@ end
 ## required for ajax reques
 # this could likely be done entirely in javascript
 get '/doc' do
-  # get api url for target file
-  url = params[:url]
-  # get cookie data need for view
   client = Octokit::Client.new :access_token => session[:access_token]
   data = client.user
   @username = data.login
   @user_url = data.html_url
-
-  # get doc from github
-  if url
-    @doc = get_doc_from_data(url)
-  else
-    @doc = get_doc_from_template
-  end
+  @doc = get_doc_from_template
   return @doc
 end
