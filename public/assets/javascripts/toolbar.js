@@ -10,8 +10,6 @@ $(document).ready(function(){
   });
   aceEditor.setShowInvisibles(true);
 
-
-
   // load empty template onload
   Util.loadTemplateText();
 
@@ -69,9 +67,7 @@ $(document).ready(function(){
   });
   // open pr review dialogue box
   $(document).on("click", "#file-pr", function(){
-    $('#editor').addClass("darkened");
-    $('#preview').addClass("darkened");
-    //Util.darken();
+    Util.darken();
     $('.file-window').removeClass("visible")
     $('#pull-request-viewer').addClass("visible")
     Pr.displayPullRequestInfo();
@@ -85,9 +81,7 @@ $(document).ready(function(){
   });
 //open repository list
   $(document).on("click",".file-open-dir", function(){
-    $('#editor').addClass("darkened");
-    $('#preview').addClass("darkened");
-    //Util.darken();
+    Util.darken();
     $('.file-window').removeClass("visible")
     $('#breadcrumbs').empty();
     $("#repositories").empty();
@@ -100,9 +94,7 @@ $(document).ready(function(){
     $('.file-window').removeClass("visible");
     var url = "https://api.github.com/user/repos";
     SaveAs.displaySaveAsRepoList(url, gon.access_token);
-    $('#editor').addClass("darkened");
-    $('#preview').addClass("darkened");
-    //Util.darken();
+    Util.darken();
     $('#save').addClass("visible");
 
   });
@@ -162,18 +154,14 @@ $(document).ready(function(){
   $(document).on("click",".file-open-file", function(){
     var url = $(this).attr("data-url");
     $('.file-window').removeClass("visible");
-    //Util.undarken();
-    $('#editor').removeClass("darkened");
-    $('#preview').removeClass("darkened");
+    Util.undarken();
     Util.loadText(url, gon.access_token)
   });
 // open file from input url
   $("#file-manual").submit(function(e){
     e.preventDefault();
     $('.file-window').removeClass("visible");
-    //Util.undarken();
-    $('#editor').removeClass("darkened");
-    $('#preview').removeClass("darkened");
+    Util.undarken();
     var url = $(this).find("#manual-url").val();
     Util.loadText(url, gon.access_token)
   });
@@ -185,9 +173,7 @@ $(document).ready(function(){
     var repo = $(this).attr("data-repo");
     var url = "https://api.github.com/repos/" + repo + "/contents" + path + "?ref=" + branch;
     $('.file-window').removeClass("visible");
-    $('#editor').removeClass("darkened");
-    $('#preview').removeClass("darkened");
-    //Util.undarken();
+    Util.undarken();
     Recent.set(url);
     Util.loadText(url, gon.access_token)
   });
@@ -245,9 +231,7 @@ $(document).ready(function(){
 
   $("#editor-wrapper").on("click", function(){
     $(".file-window").removeClass("visible");
-    $('#editor').removeClass("darkened");
-    $('#preview').removeClass("darkened");
-    //Util.undarken();
+    Util.undarken();
   });
 
   $("#save-form").submit(function(e){
@@ -280,9 +264,8 @@ var Util = {
   },
   // no idea why these are not working
   darken: function(){
-    console.log($("#preview"));
-    $('#editor').removeClass("darkened");
-    $('#preview').removeClass("darkened");
+    $('#editor').addClass("darkened");
+    $('#preview').addClass("darkened");
   },
   access_token: gon.access_token,
   retrieveAPIData: function(url, access_token){
@@ -369,9 +352,7 @@ var SaveAs = {
         //updates save parameters; specifically it resets save form with newest shaw
         Util.setSaveParameters(res.responseJSON.content)
         $('#save').removeClass("visible");
-        //Util.undarken();
-        $('#editor').removeClass("darkened");
-        $('#preview').removeClass("darkened");
+        Util.undarken();
       },
       error: function(res, status, error){
         console.log(res, status, error)
@@ -575,7 +556,7 @@ var Open = {
       $("#repo-browser-branch").empty();
       $("#recentfiles").empty();
       if (Recent.files.length === 0) {
-        $("#recentfiles").append('<li>No recent files available</li>');        
+        $("#recentfiles").append('<li>No recent files available</li>');
       } else {
         for (var i = 0, len = Recent.files.length; i < len; i++) {
           $("#recentfiles").append('<li><a href="#" class="file-open-file" data-url="'+ Recent.files[i] + '">' + Recent.files[i] +'</a></li>');
